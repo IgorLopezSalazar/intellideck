@@ -1,15 +1,20 @@
 name: CI
-on: push
+on:
+  push:
+    branches: [ main ]
 jobs:
   build:
     name: Test - Unit & Integration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install modules
-        run: yarn
-      - name: Run tests
-        run: yarn test
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '17.x'
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        run: npm test
       - name: Sonar
         if: success()
         run: >
