@@ -25,4 +25,3 @@ jobs:
           args: >
             -Dsonar.projectKey=JorgeDSDP_intellideck
             -Dsonar.organization=jorgedsdp
-            -Dsonar.login=$SONAR_TOKEN
