@@ -17,12 +17,13 @@ jobs:
         run: npm test
       - name: Sonar
         if: success()
-        run: >
-          mvn -B verify -DskipTests sonar:sonar
-          -Dsonar.projectKey=JorgeDSDP_intellideck
-          -Dsonar.organization=jorge88
-          -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.login=$SONAR_TOKEN
+        uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=JorgeDSDP_intellideck
+            -Dsonar.organization=jorge88
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.login=$SONAR_TOKEN
