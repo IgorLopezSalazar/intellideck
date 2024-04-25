@@ -24,6 +24,5 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=JorgeDSDP_intellideck
-            -Dsonar.organization=jorge88
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=jorgedsdp
             -Dsonar.login=$SONAR_TOKEN
