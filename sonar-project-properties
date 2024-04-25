@@ -1,2 +1,4 @@
 sonar.projectKey=JorgeDSDP_intellideck
+sonar.organization=jorgedsdp
+sonar.sources=src
 sonar.javascript.lcov.reportPaths=coverage/lcov.info
