@@ -16,4 +16,8 @@ router.get('/users/:id', (req: any, res: any) => {
     return controller.getUser(req, res);
 })
 
+router.post('/login', (req: any, res: any) => {
+    return controller.login(req, res);
+})
+
 export{ router };
