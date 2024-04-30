@@ -1,6 +1,5 @@
 import express from 'express';
-import {User} from "../models/user.ts";
-import {UserController} from "../controllers/user.controller.js";
+import {UserController} from "../controllers/user.controller.ts";
 
 const router = express.Router();
 const controller = new UserController();
@@ -11,6 +10,10 @@ router.get('/users', (req: any, res: any) => {
 
 router.post('/users', (req: any, res: any) => {
     return controller.postUser(req, res);
+})
+
+router.get('/users/:id', (req: any, res: any) => {
+    return controller.getUser(req, res);
 })
 
 export{ router };

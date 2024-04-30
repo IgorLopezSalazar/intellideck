@@ -1,7 +1,7 @@
 import pkg from 'bcryptjs';
 const { hashSync } = pkg;
 
-import {User} from "../models/user.js";
+import {User} from "../models/user.ts";
 
 
 const SALT_ROUNDS : number = 10;
@@ -29,5 +29,13 @@ export class UserController {
                 res.status(201).json(data))
             .catch((e: any) =>
                 res.status(409).json("A user with the same email or username already exists"));
+    }
+
+    async getUser(req: any, res: any) {
+        User.findById(req.params.id)
+            .then((data: any) =>
+                res.status(200).json(data))
+            .catch((e: any) =>
+                res.status(404).json("No result found"));
     }
 }
