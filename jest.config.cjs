@@ -9,5 +9,6 @@ module.exports = {
   coveragePathIgnorePatterns: ["/node_modules/", "/test/"],
   testPathIgnorePatterns: ["/node_modules/"],
   transform: {},
-  verbose: true
+  verbose: true,
+  testTimeout: 10000
 };

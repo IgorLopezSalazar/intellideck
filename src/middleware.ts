@@ -1,18 +1,34 @@
-import {StatusCodes} from "http-status-codes/build/es/index.js";
+import StatusCodes from "http-status-codes";
+import fs from 'fs';
+import jwt from 'jsonwebtoken';
 
 export class Middleware {
-    // async isAuthenticated(req: any, res:any, next: any) {
-    //     let token = this.tokenProvided(req, res);
-    //     if (token) {
-    //         jwt.verify(token, readKey(), (err, decoded) => {
-    //             if (!err) {
-    //                 req.decoded = decoded;
-    //                 next();
-    //             } else
-    //                 res.status(httpCode.codes.UNAUTHORIZED).json('You are not logged');
-    //         });
-    //     }
-    // }
+
+    readPrivateKey() {
+        return fs.readFileSync('./private.key', "utf-8");
+    }
+    async isAuthenticated(req: any, res:any, next: any) {
+        this.tokenProvided(req, res)
+            .then(token => {
+                if (token) {
+                    jwt.verify(token, this.readPrivateKey(), (err:any, decoded:any) => {
+                        if (!err) {
+                            req.decoded = decoded;
+                            next();
+                        } else
+                            res.status(StatusCodes.UNAUTHORIZED).json("You are not logged");
+                    });
+                }
+            })
+    }
+
+    async generateToken(username: string, role: string, res: any) {
+        const token = jwt.sign({ "username": username, "role": role }, this.readPrivateKey(), {
+            expiresIn: '1h',
+            algorithm: 'RS256'
+        });
+        res.status(200).json("Bearer " + token);
+    }
 
     async tokenProvided(req: any, res: any) {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer')
