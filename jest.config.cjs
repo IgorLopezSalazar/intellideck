@@ -3,6 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
+  setupFiles: ["dotenv/config"],
   clearMocks: true,
   coverageReporters: ["lcov", "text-summary"],
   collectCoverageFrom: ["src/**/*.ts"],

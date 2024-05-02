@@ -22,12 +22,11 @@ export class Middleware {
             })
     }
 
-    async generateToken(username: string, role: string, res: any) {
-        const token = jwt.sign({ "username": username, "role": role }, this.readPrivateKey(), {
+    async generateToken(username: string, role: string) {
+        return "Bearer " + jwt.sign({ "username": username, "role": role }, this.readPrivateKey(), {
             expiresIn: '1h',
             algorithm: 'RS256'
         });
-        res.status(200).json("Bearer " + token);
     }
 
     async tokenProvided(req: any, res: any) {

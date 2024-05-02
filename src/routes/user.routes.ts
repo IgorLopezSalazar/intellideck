@@ -6,16 +6,24 @@ const router = express.Router();
 const controller = new UserController();
 const middleware: Middleware = new Middleware();
 
-router.get('/users', (req: any, res: any) => {
+router.get('/users',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
     return controller.getAllUsers(req, res);
 })
 
-router.post('/users', controller.postUser)
+router.post('/users', (req: any, res: any) => {
+    return controller.postUser(req, res);
+})
 
-router.get('/users/:id', (req: any, res: any) => {
+router.get('/users/:id',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
     return controller.getUser(req, res);
 })
 
-router.post('/login', controller.login)
+router.post('/login', (req: any, res: any) => {
+    return controller.login(req, res);
+})
 
 export{ router };

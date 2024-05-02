@@ -1,21 +1,27 @@
 import pkg from 'bcryptjs';
-const { hashSync, compare } = pkg;
+
+const {hashSync, compare} = pkg;
 
 import {User} from "../models/user.ts";
 import StatusCodes from "http-status-codes";
 import {Middleware} from "../middleware.ts";
 
 
-const SALT_ROUNDS : number = 10;
+const SALT_ROUNDS: number = 10;
 const middleware: Middleware = new Middleware();
 
 export class UserController {
     async getAllUsers(req: any, res: any) {
         User.find({})
-            .then((data: any) =>
-                res.status(StatusCodes.OK).json(data))
-            .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("No result found"));
+            .then((data: any[]) => {
+                if(data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                }
+                else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            });
+
     }
 
     async postUser(req: any, res: any) {
@@ -47,15 +53,19 @@ export class UserController {
     async login(req: any, res: any) {
         User.findOne({username: req.body.username})
             .then((user: any) => {
-                if(!user) {
+                if (!user) {
                     res.status(StatusCodes.UNAUTHORIZED).json("Authentication failed");
                 }
                 compare(req.body.password, user.password)
                     .then((match: boolean) => {
-                        if(!match) {
+                        if (!match) {
                             res.status(StatusCodes.UNAUTHORIZED).json("Authentication failed");
                         }
-                        middleware.generateToken(user.username, user.role, res);
+                        else {
+                            middleware.generateToken(user.username, user.role).then((token: any) => {
+                                res.status(StatusCodes.OK).json(token);
+                            });
+                        }
                     })
             })
             .catch((e: any) => {
