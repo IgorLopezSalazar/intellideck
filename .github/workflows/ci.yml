@@ -16,9 +16,14 @@ jobs:
       - name: Create env file
         run: |
           touch .env
+          echo HOST=${{ secrets.ENV_NODE_ENV }} >> .env
           echo HOST=${{ secrets.ENV_HOST }} >> .env
           echo PORT=${{ secrets.ENV_PORT }} >> .env
           echo MONGO_PORT=${{ secrets.ENV_MONGO_PORT }} >> .env
+      - name: Create private.key file
+        run: |
+          touch private.key
+          echo HOST=${{ secrets.PRIVATE_KEY }} >> private.key
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
