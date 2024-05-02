@@ -21,9 +21,11 @@ jobs:
           echo PORT=${{ secrets.ENV_PORT }} >> .env
           echo MONGO_PORT=${{ secrets.ENV_MONGO_PORT }} >> .env
       - name: Create private.key file
+        env:
+          MY_SECRET: ${{ secrets.PRIVATE_KEY }}
         run: |
           touch private.key
-          echo ${{ secrets.PRIVATE_KEY }} >> private.key
+          echo "$MY_SECRET" >> private.key
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
