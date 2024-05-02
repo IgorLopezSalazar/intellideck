@@ -23,7 +23,7 @@ jobs:
       - name: Create private.key file
         run: |
           touch private.key
-          echo HOST=${{ secrets.PRIVATE_KEY }} >> private.key
+          echo ${{ secrets.PRIVATE_KEY }} >> private.key
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
