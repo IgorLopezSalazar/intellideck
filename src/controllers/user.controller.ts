@@ -1,6 +1,7 @@
 import pkg from 'bcryptjs';
-
 const {hashSync, compare} = pkg;
+
+import sanitize from 'mongo-sanitize';
 
 import {User} from "../models/user.ts";
 import StatusCodes from "http-status-codes";
@@ -26,12 +27,12 @@ export class UserController {
 
     async postUser(req: any, res: any) {
         let user = new User({
-            name: req.body.name,
-            username: req.body.username,
-            email: req.body.email,
+            name: sanitize(req.body.name),
+            username: sanitize(req.body.username),
+            email: sanitize(req.body.email),
             password: hashSync(req.body.password, SALT_ROUNDS),
-            profilePicture: req.body.profilePicture,
-            role: req.body.role
+            profilePicture: sanitize(req.body.profilePicture),
+            role: sanitize(req.body.role)
         })
         User.create(user)
             .then((data: any) =>
@@ -43,7 +44,7 @@ export class UserController {
     }
 
     async getUser(req: any, res: any) {
-        User.findById(req.params.id)
+        User.findById(sanitize(req.params.id))
             .then((data: any) =>
                 res.status(StatusCodes.OK).json(data))
             .catch((e: any) =>
@@ -51,7 +52,7 @@ export class UserController {
     }
 
     async login(req: any, res: any) {
-        User.findOne({username: req.body.username})
+        User.findOne({username: sanitize(req.body.username)})
             .then((user: any) => {
                 if (!user) {
                     res.status(StatusCodes.UNAUTHORIZED).json("Authentication failed");
