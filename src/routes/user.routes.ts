@@ -6,10 +6,22 @@ const router = express.Router();
 const controller = new UserController();
 const middleware: Middleware = new Middleware();
 
-router.get('/users',(req: any, res: any, next: any) => {
+router.get('/users/followed',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
-    return controller.getAllUsers(req, res);
+    return controller.getFollowedUsers(req, res);
+})
+
+router.put('/users/follow',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
+    return controller.putFollowUser(req, res);
+})
+
+router.put('/users/unfollow',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
+    return controller.putUnfollowUser(req, res);
 })
 
 router.post('/users', (req: any, res: any) => {

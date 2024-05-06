@@ -9,6 +9,7 @@ export interface IUser {
     password : string;
     profilePicture? : string;
     role : string;
+    followedUsers : IUser[];
 }
 
 const schema = new Schema<IUser>({
@@ -19,5 +20,7 @@ const schema = new Schema<IUser>({
     profilePicture: { type: Schema.Types.String},
     role: { type: Schema.Types.String, enum: ['USER', 'ADMIN'], default: 'USER', required: true },
 });
+
+schema.add({ followedUsers: [schema] });
 
 export const User = model<IUser>(DOCUMENT_NAME, schema, COLLECTION_NAME);
