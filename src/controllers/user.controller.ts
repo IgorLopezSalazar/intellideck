@@ -78,20 +78,20 @@ export class UserController {
     async putFollowUser(req: any, res: any) {
         User.findOne({ username: sanitize(req.body.username) }, "-followedUsers")
             .then((toFollow: any) => {
-                User.findOne({ username: req.decoded.username, "followedUsers._id": { $nin: [toFollow._id] } })
+                User.findOneAndUpdate({ username: req.decoded.username,
+                    "followedUsers._id": { $nin: [toFollow._id] }},
+                    {"$push": { "followedUsers": toFollow }},
+                    {returnOriginal: false})
                     .then((loggedUser: any) => {
-                        if (!loggedUser) {
+                        if(!loggedUser) {
                             res.status(StatusCodes.BAD_REQUEST).json("User already followed");
                         }
                         else {
-                            loggedUser.followedUsers.push(toFollow);
-
-                            loggedUser.save();
-                            res.status(StatusCodes.OK).json();
+                            res.status(StatusCodes.OK).json(loggedUser);
                         }
                     })
                     .catch((e: any) => {
-                        res.status(StatusCodes.NOT_FOUND).json("No user found");
+                        res.status(StatusCodes.NOT_FOUND).json("User not found");
                         console.log(e);
                     });
             })
@@ -102,20 +102,20 @@ export class UserController {
     async putUnfollowUser(req: any, res: any) {
         User.findOne({ username: sanitize(req.body.username) }, "-followedUsers")
             .then((toUnfollow: any) => {
-                User.findOne({ username: req.decoded.username, "followedUsers._id": { $in: [toUnfollow._id] } })
+                User.findOneAndUpdate({ username: req.decoded.username,
+                        "followedUsers._id": { $in: [toUnfollow._id] }},
+                    {"$pull": { "followedUsers": toUnfollow }},
+                    {returnOriginal: false})
                     .then((loggedUser: any) => {
-                        if (!loggedUser) {
-                            res.status(StatusCodes.BAD_REQUEST).json("User not followed");
+                        if(!loggedUser) {
+                            res.status(StatusCodes.BAD_REQUEST).json("User already not followed");
                         }
                         else {
-                            loggedUser.followedUsers.pull(toUnfollow);
-
-                            loggedUser.save();
-                            res.status(StatusCodes.OK).json();
+                            res.status(StatusCodes.OK).json(loggedUser);
                         }
                     })
                     .catch((e: any) => {
-                        res.status(StatusCodes.NOT_FOUND).json("No user found");
+                        res.status(StatusCodes.NOT_FOUND).json("User not found");
                         console.log(e);
                     });
             })
