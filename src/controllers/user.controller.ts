@@ -75,51 +75,51 @@ export class UserController {
 
     }
 
-    async putFollowUser(req: any, res: any) {
+    async followUnfollowSearchUser(req: any, res: any, next: any) {
         User.findOne({ username: sanitize(req.body.username) }, "-followedUsers")
             .then((toFollow: any) => {
-                User.findOneAndUpdate({ username: req.decoded.username,
-                    "followedUsers._id": { $nin: [toFollow._id] }},
-                    {"$push": { "followedUsers": toFollow }},
-                    {returnOriginal: false})
-                    .then((loggedUser: any) => {
-                        if(!loggedUser) {
-                            res.status(StatusCodes.BAD_REQUEST).json("User already followed");
-                        }
-                        else {
-                            res.status(StatusCodes.OK).json(loggedUser);
-                        }
-                    })
-                    .catch((e: any) => {
-                        res.status(StatusCodes.NOT_FOUND).json("User not found");
-                        console.log(e);
-                    });
+                req.foundUser = toFollow;
+                next();
             })
             .catch((e: any) =>
                 res.status(StatusCodes.NOT_FOUND).json("User to follow not found"));
     }
 
-    async putUnfollowUser(req: any, res: any) {
-        User.findOne({ username: sanitize(req.body.username) }, "-followedUsers")
-            .then((toUnfollow: any) => {
-                User.findOneAndUpdate({ username: req.decoded.username,
-                        "followedUsers._id": { $in: [toUnfollow._id] }},
-                    {"$pull": { "followedUsers": toUnfollow }},
-                    {returnOriginal: false})
-                    .then((loggedUser: any) => {
-                        if(!loggedUser) {
-                            res.status(StatusCodes.BAD_REQUEST).json("User already not followed");
-                        }
-                        else {
-                            res.status(StatusCodes.OK).json(loggedUser);
-                        }
-                    })
-                    .catch((e: any) => {
-                        res.status(StatusCodes.NOT_FOUND).json("User not found");
-                        console.log(e);
-                    });
+    async putFollowUser(req: any, res: any) {
+        User.findOneAndUpdate({ username: req.decoded.username,
+                "followedUsers._id": { $nin: [req.foundUser._id] }},
+            {"$push": { "followedUsers": req.foundUser }},
+            {returnOriginal: false})
+            .then((loggedUser: any) => {
+                if(!loggedUser) {
+                    res.status(StatusCodes.BAD_REQUEST).json("User already followed");
+                }
+                else {
+                    res.status(StatusCodes.OK).json(loggedUser);
+                }
             })
-            .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("User to unfollow not found"));
+            .catch((e: any) => {
+                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                console.log(e);
+            });
+    }
+
+    async putUnfollowUser(req: any, res: any) {
+        User.findOneAndUpdate({ username: req.decoded.username,
+                "followedUsers._id": { $in: [req.foundUser._id] }},
+            {"$pull": { "followedUsers": req.foundUser }},
+            {returnOriginal: false})
+            .then((loggedUser: any) => {
+                if(!loggedUser) {
+                    res.status(StatusCodes.BAD_REQUEST).json("User already not followed");
+                }
+                else {
+                    res.status(StatusCodes.OK).json(loggedUser);
+                }
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                console.log(e);
+            });
     }
 }
