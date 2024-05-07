@@ -81,14 +81,24 @@ export class UserController {
 
     }
 
-    async followUnfollowSearchUser(req: any, res: any, next: any) {
+    async searchUserByUsername(req: any, res: any, next: any) {
         User.findOne({ username: sanitize(req.body.username) }, "-followedUsers")
             .then((toFollow: any) => {
                 req.foundUser = toFollow;
                 next();
             })
             .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("User to follow not found"));
+                res.status(StatusCodes.NOT_FOUND).json("User not found"));
+    }
+
+    async getLoggedUser(req: any, res: any, next: any) {
+        User.findOne({ username: sanitize(req.decoded.username) }, "-followedUsers")
+            .then((toFollow: any) => {
+                req.loggedUser = toFollow;
+                next();
+            })
+            .catch((e: any) =>
+                res.status(StatusCodes.NOT_FOUND).json("User not found"));
     }
 
     async putFollowUser(req: any, res: any) {
