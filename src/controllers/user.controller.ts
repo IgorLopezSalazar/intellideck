@@ -122,4 +122,16 @@ export class UserController {
                 console.log(e);
             });
     }
+
+    getFollowers(req: any, res: any) {
+        User.find({"followedUsers.username": { $in: [sanitize(req.params.username)] }}, "-followedUsers")
+            .then((data: any[]) => {
+                if(data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                }
+                else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            });
+    }
 }

@@ -12,6 +12,12 @@ router.get('/users/followed',(req: any, res: any, next: any) => {
     return controller.getFollowedUsers(req, res);
 })
 
+router.get('/users/followers/:username',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
+    return controller.getFollowers(req, res);
+})
+
 router.put('/users/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
