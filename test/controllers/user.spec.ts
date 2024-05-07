@@ -77,7 +77,7 @@ describe("User", () => {
 
     describe("GET Users Followed Method", () => {
         describe("User logged", () => {
-            describe("Given users exist", () => {
+            describe("Given users followed", () => {
                 it("should return a 200 and the users", async () => {
                     const userID = '66326642b6e5d026db70f695';
                     const responsePayload = {
@@ -100,12 +100,52 @@ describe("User", () => {
                 });
             });
 
-            describe("Given no users exist", () => {
+            describe("Given no users followed", () => {
                 it("should return a 204", async () => {
                     const createUserMock = jest.spyOn(User, "find")
                         .mockResolvedValueOnce([]);
                     await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
                         await supertest(app).get(`/api/users/followed`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+        });
+    })
+
+    describe("GET Followers Method", () => {
+        describe("User logged", () => {
+            describe("Given followers exist", () => {
+                it("should return a 200 and the users", async () => {
+                    const userID = '66326642b6e5d026db70f695';
+                    const responsePayload = {
+                        _id: userID,
+                        name: "Test",
+                        username: "TestTesty",
+                        email: "test@test.com",
+                        password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
+                        role: "USER"
+                    };
+                    const createUserMock = jest.spyOn(User, "find")
+                        .mockResolvedValueOnce([responsePayload]);
+                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followers/FollowedTestedUser`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+
+            describe("Given no users exist", () => {
+                it("should return a 204", async () => {
+                    const createUserMock = jest.spyOn(User, "find")
+                        .mockResolvedValueOnce([]);
+                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followers/FollowedTestedUser`).set({"Authorization": token})
                             .then(response => {
                                 expect(response.status).toEqual(204);
                             });
