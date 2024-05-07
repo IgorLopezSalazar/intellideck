@@ -1,7 +1,7 @@
 import sanitize from 'mongo-sanitize';
 
 import {Deck} from "../models/deck.ts";
-import StatusCodes from "http-status-codes";
+import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
 
 

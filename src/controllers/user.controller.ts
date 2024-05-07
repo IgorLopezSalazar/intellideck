@@ -4,7 +4,7 @@ const {hashSync, compare} = pkg;
 import sanitize from 'mongo-sanitize';
 
 import {User} from "../models/user.ts";
-import StatusCodes from "http-status-codes";
+import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
 
 
