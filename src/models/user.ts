@@ -12,7 +12,7 @@ export interface IUser {
     followedUsers : IUser[];
 }
 
-const schema = new Schema<IUser>({
+export const userSchema = new Schema<IUser>({
     name: { type: Schema.Types.String, required: true },
     username: { type: Schema.Types.String, required: true, unique: true },
     email: { type: Schema.Types.String, required: true, unique: true },
@@ -21,6 +21,6 @@ const schema = new Schema<IUser>({
     role: { type: Schema.Types.String, enum: ['USER', 'ADMIN'], default: 'USER', required: true },
 });
 
-schema.add({ followedUsers: [schema] });
+userSchema.add({ followedUsers: [userSchema] });
 
-export const User = model<IUser>(DOCUMENT_NAME, schema, COLLECTION_NAME);
+export const User = model<IUser>(DOCUMENT_NAME, userSchema, COLLECTION_NAME);
