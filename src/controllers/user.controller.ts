@@ -43,9 +43,15 @@ export class UserController {
     }
 
     async getUser(req: any, res: any) {
-        User.findById(sanitize(req.params.id))
-            .then((data: any) =>
-                res.status(StatusCodes.OK).json(data))
+        User.findOne({username: sanitize(req.params.username)})
+            .then((data: any) => {
+                if(!data) {
+                    res.status(StatusCodes.NOT_FOUND).json("No result found");
+                }
+                else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
             .catch((e: any) =>
                 res.status(StatusCodes.NOT_FOUND).json("No result found"));
     }

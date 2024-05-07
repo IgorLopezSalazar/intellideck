@@ -38,7 +38,7 @@ router.post('/users', (req: any, res: any) => {
     return controller.postUser(req, res);
 })
 
-router.get('/users/:id',(req: any, res: any, next: any) => {
+router.get('/users/:username',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return controller.getUser(req, res);

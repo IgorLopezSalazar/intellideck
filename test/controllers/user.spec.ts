@@ -13,13 +13,15 @@ const userPayload = {
 }
 
 describe("User", () => {
-    describe("GET User by ID Method", () => {
+    describe("GET User by username Method", () => {
         describe("User logged", () => {
-            describe("Given user ID not existing", () => {
+            describe("Given username not existing", () => {
                 it("should return a 404", async () => {
-                    const userID = 'none';
+                    const username = 'none';
+                    const userMock = jest.spyOn(User, "findOne")
+                        .mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/${userID}`)
+                        await supertest(app).get(`/api/users/${username}`)
                             .set({"Authorization": token}).then(response => {
                                 expect(response.status).toEqual(404);
                             });
@@ -29,19 +31,19 @@ describe("User", () => {
 
             describe("Given valid user ID", () => {
                 it("should return a 200 and the user", async () => {
-                    const userID = '66326642b6e5d026db70f695';
+                    const username = 'TestTesty';
                     const responsePayload = {
-                        _id: userID,
+                        _id: '66326642b6e5d026db70f695',
                         name: "Test",
-                        username: "TestTesty",
+                        username: username,
                         email: "test@test.com",
                         password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                         role: "USER"
                     };
-                    const createUserMock = jest.spyOn(User, "findById")
+                    const createUserMock = jest.spyOn(User, "findOne")
                         .mockResolvedValueOnce(responsePayload);
                     await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/${userID}`)
+                        await supertest(app).get(`/api/users/${username}`)
                             .set({"Authorization": token}).then(response => {
                                 expect(response.status).toEqual(200);
                                 expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
