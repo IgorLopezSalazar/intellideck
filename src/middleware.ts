@@ -22,8 +22,23 @@ export class Middleware {
             })
     }
 
-    async generateToken(username: string, role: string) {
-        return "Bearer " + jwt.sign({ "username": username, "role": role }, this.readPrivateKey(), {
+    async isAdmin(req: any, res:any, next: any) {
+        this.tokenProvided(req, res)
+            .then(token => {
+                if (token) {
+                    jwt.verify(token, this.readPrivateKey(), (err:any, decoded:any) => {
+                        if (!err && decoded.role == "ADMIN") {
+                            req.decoded = decoded;
+                            next();
+                        } else
+                            res.status(StatusCodes.UNAUTHORIZED).json("You are not logged");
+                    });
+                }
+            })
+    }
+
+    async generateToken(id: string, role: string) {
+        return "Bearer " + jwt.sign({ "_id": id, "role": role }, this.readPrivateKey(), {
             expiresIn: '1h',
             algorithm: 'RS256'
         });

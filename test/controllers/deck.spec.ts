@@ -52,8 +52,8 @@ describe("Deck", () => {
             });
         });
 
-        describe("Given user data is duplicated", () => {
-            it("should return a 409", async () => {
+        describe("Given user data is invalid", () => {
+            it("should return a 400", async () => {
                 const creatorPayload = {
                     _id: "663a6edf49c12cdab59ddfc2",
                     name: "Test",
@@ -70,12 +70,11 @@ describe("Deck", () => {
 
                 await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
                     await supertest(app).post(`/api/decks/`).send({
-                        title: "TestDeck",
                         description: "This is a test deck",
                         isPublished: false
                     }).set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(409);
+                            expect(response.status).toEqual(400);
                         });
                 });
             });

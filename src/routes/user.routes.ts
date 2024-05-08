@@ -6,13 +6,13 @@ const router = express.Router();
 const controller = new UserController();
 const middleware: Middleware = new Middleware();
 
-router.get('/users/followed',(req: any, res: any, next: any) => {
+router.get('/users/followed/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return controller.getFollowedUsers(req, res);
 })
 
-router.get('/users/followers/:username',(req: any, res: any, next: any) => {
+router.get('/users/followers/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return controller.getFollowers(req, res);
@@ -21,7 +21,7 @@ router.get('/users/followers/:username',(req: any, res: any, next: any) => {
 router.put('/users/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
-    return controller.searchUserByUsername(req, res, next);
+    return controller.searchUserByID(req, res, next);
 }, (req: any, res: any) => {
     return controller.putFollowUser(req, res);
 })
@@ -29,7 +29,7 @@ router.put('/users/follow',(req: any, res: any, next: any) => {
 router.put('/users/unfollow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
-    return controller.searchUserByUsername(req, res, next);
+    return controller.searchUserByID(req, res, next);
 }, (req: any, res: any) => {
     return controller.putUnfollowUser(req, res);
 })
@@ -38,7 +38,7 @@ router.post('/users', (req: any, res: any) => {
     return controller.postUser(req, res);
 })
 
-router.get('/users/:username',(req: any, res: any, next: any) => {
+router.get('/users/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return controller.getUser(req, res);

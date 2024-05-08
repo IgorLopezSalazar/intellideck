@@ -1,7 +1,8 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
+import {DECK_DOCUMENT_NAME, deckSchema, IDeck} from "./deck.ts";
 
-export const DOCUMENT_NAME = 'user';
-export const COLLECTION_NAME = 'users';
+export const USER_DOCUMENT_NAME = 'user';
+export const USER_COLLECTION_NAME = 'users';
 export interface IUser {
     name : string;
     username : string;
@@ -10,6 +11,7 @@ export interface IUser {
     profilePicture? : string;
     role : string;
     followedUsers : IUser[];
+    followedDecks : IDeck[];
 }
 
 export const userSchema = new Schema<IUser>({
@@ -19,8 +21,8 @@ export const userSchema = new Schema<IUser>({
     password: { type: Schema.Types.String, required: true },
     profilePicture: { type: Schema.Types.String},
     role: { type: Schema.Types.String, enum: ['USER', 'ADMIN'], default: 'USER', required: true },
+    followedDecks: [{ type: Schema.Types.ObjectId, ref: 'deck' }],
+    followedUsers: [{ type: Schema.Types.ObjectId, ref: 'user' }]
 });
 
-userSchema.add({ followedUsers: [userSchema] });
-
-export const User = model<IUser>(DOCUMENT_NAME, userSchema, COLLECTION_NAME);
+export const User = model<IUser>(USER_DOCUMENT_NAME, userSchema, USER_COLLECTION_NAME);

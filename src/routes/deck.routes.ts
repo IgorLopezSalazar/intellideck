@@ -16,4 +16,18 @@ router.post('/decks',(req: any, res: any, next: any) => {
     return deckController.postDeck(req, res);
 })
 
+router.get('/decks/:username',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
+    return deckController.getUserDecks(req, res);
+})
+
+router.put('/decks/follow',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+},(req: any, res: any, next: any) => {
+    return deckController.findById(req, res, next);
+}, (req: any, res: any) => {
+    return userController.putFollowDeck(req, res);
+})
+
 export{ router };

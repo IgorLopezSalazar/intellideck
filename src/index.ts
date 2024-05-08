@@ -4,7 +4,7 @@ import {app} from "./app.ts";
 
 dotenv.config();
 
-const db_connection = `mongodb://${process.env.HOST}:${process.env.MONGO_PORT}`;
+const db_connection = `mongodb://${process.env.HOST}:${process.env.MONGO_PORT}/${process.env.DATABASE_NAME}`;
 
 mongoose.connect(db_connection)
     .then(() => {

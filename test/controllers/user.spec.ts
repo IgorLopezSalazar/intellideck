@@ -3,25 +3,26 @@ import {expect, describe, it, jest} from '@jest/globals';
 import {app} from "../../src/app.ts";
 import {User} from "../../src/models/user.ts";
 import {Middleware} from "../../src/middleware.ts";
+import {Aggregate} from "mongoose";
 
 jest.useFakeTimers();
 const middleware = new Middleware();
 
 const userPayload = {
-    username: "Test",
+    id: "663bd4577abace2f8505108e",
     role: "USER"
 }
 
 describe("User", () => {
-    describe("GET User by username Method", () => {
+    describe("GET User by ID Method", () => {
         describe("User logged", () => {
-            describe("Given username not existing", () => {
+            describe("Given ID not existing", () => {
                 it("should return a 404", async () => {
-                    const username = 'none';
-                    const userMock = jest.spyOn(User, "findOne")
+                    const id = 'none';
+                    const userMock = jest.spyOn(User, "findById")
                         .mockResolvedValueOnce(null);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/${username}`)
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/${id}`)
                             .set({"Authorization": token}).then(response => {
                                 expect(response.status).toEqual(404);
                             });
@@ -31,19 +32,19 @@ describe("User", () => {
 
             describe("Given valid user ID", () => {
                 it("should return a 200 and the user", async () => {
-                    const username = 'TestTesty';
+                    const id = '66326642b6e5d026db70f695';
                     const responsePayload = {
-                        _id: '66326642b6e5d026db70f695',
+                        _id: id,
                         name: "Test",
-                        username: username,
+                        username: "TestTesty",
                         email: "test@test.com",
                         password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                         role: "USER"
                     };
-                    const createUserMock = jest.spyOn(User, "findOne")
+                    const createUserMock = jest.spyOn(User, "findById")
                         .mockResolvedValueOnce(responsePayload);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/${username}`)
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/${id}`)
                             .set({"Authorization": token}).then(response => {
                                 expect(response.status).toEqual(200);
                                 expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
@@ -79,24 +80,30 @@ describe("User", () => {
 
     describe("GET Users Followed Method", () => {
         describe("User logged", () => {
-            describe("Given users followed", () => {
+            describe("Given user ID provided and users followed", () => {
                 it("should return a 200 and the users", async () => {
                     const userID = '66326642b6e5d026db70f695';
-                    const responsePayload = {
+                    const followedUserPayload = {
                         _id: userID,
                         name: "Test",
                         username: "TestTesty",
                         email: "test@test.com",
                         password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                         role: "USER"
+                    }
+                    const responsePayload = {
+                        followedUsers: [followedUserPayload]
                     };
-                    const createUserMock = jest.spyOn(User, "find")
-                        .mockResolvedValueOnce([responsePayload]);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/followed`).set({"Authorization": token})
+
+                     const userMock = jest.spyOn(User, "aggregate")
+                         .mockResolvedValueOnce([responsePayload]);
+
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followed/${userPayload.id}`).set({"Authorization": token})
                             .then(response => {
                                 expect(response.status).toEqual(200);
-                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                                console.log(response.body);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(followedUserPayload)]));
                             });
                     });
                 });
@@ -104,10 +111,12 @@ describe("User", () => {
 
             describe("Given no users followed", () => {
                 it("should return a 204", async () => {
-                    const createUserMock = jest.spyOn(User, "find")
-                        .mockResolvedValueOnce([]);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/followed`).set({"Authorization": token})
+                    const userMock = jest.spyOn(User, "aggregate")
+                        .mockResolvedValueOnce([{
+                            followedUsers: []
+                        }]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followed/${userPayload.id}`).set({"Authorization": token})
                             .then(response => {
                                 expect(response.status).toEqual(204);
                             });
@@ -119,8 +128,8 @@ describe("User", () => {
 
     describe("GET Followers Method", () => {
         describe("User logged", () => {
-            describe("Given followers exist", () => {
-                it("should return a 200 and the users", async () => {
+            describe("Given user ID passed and user with followers", () => {
+                it("should return a 200 and the followers", async () => {
                     const userID = '66326642b6e5d026db70f695';
                     const responsePayload = {
                         _id: userID,
@@ -132,8 +141,8 @@ describe("User", () => {
                     };
                     const createUserMock = jest.spyOn(User, "find")
                         .mockResolvedValueOnce([responsePayload]);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/followers/FollowedTestedUser`).set({"Authorization": token})
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followers/${userPayload.id}`).set({"Authorization": token})
                             .then(response => {
                                 expect(response.status).toEqual(200);
                                 expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
@@ -142,12 +151,12 @@ describe("User", () => {
                 });
             });
 
-            describe("Given no users exist", () => {
+            describe("Given no followers exist", () => {
                 it("should return a 204", async () => {
                     const createUserMock = jest.spyOn(User, "find")
                         .mockResolvedValueOnce([]);
-                    await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/followers/FollowedTestedUser`).set({"Authorization": token})
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/followers/${userPayload.id}`).set({"Authorization": token})
                             .then(response => {
                                 expect(response.status).toEqual(204);
                             });
@@ -268,37 +277,37 @@ describe("User", () => {
                 describe("Given user to follow exists", () => {
                     it("should return a 200 and the logged user following the user to follow", async () => {
                         const userID = '66326642b6e5d026db70f695';
-                        const toFollowUsername = 'TestTestyToFollow';
-                        const userToFollowPayload = {
-                            _id: userID,
-                            name: "TestToFollow",
-                            username: toFollowUsername,
-                            email: "test@tofollow.com",
-                            password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
-                            role: "USER",
-                        };
-                        const userPayload = {
-                            _id: userID,
+                        const userLoggedPayload = {
+                            _id: userPayload.id,
                             name: "Test",
                             username: "TestTesty",
                             email: "test@test.com",
                             password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                             role: "USER",
-                            followedUsers: [userToFollowPayload]
                         };
-                        const userMock = jest.spyOn(User, "findOne")
-                            .mockResolvedValueOnce(userToFollowPayload);
-                        const user2Mock = jest.spyOn(User, "findOneAndUpdate")
-                            .mockResolvedValueOnce(userPayload);
-                        await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+
+                        const followingPayload = {
+                            _id: userPayload.id,
+                            name: "Test",
+                            username: "TestTesty",
+                            email: "test@test.com",
+                            password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
+                            role: "USER",
+                            followedUsers: [userID]
+                        }
+                        const userMock = jest.spyOn(User, "findById")
+                            .mockResolvedValueOnce(userLoggedPayload);
+                        const followMock = jest.spyOn(User, "findOneAndUpdate")
+                            .mockResolvedValueOnce(followingPayload);
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/follow`).send({
-                                username: toFollowUsername
+                                id: userID
                             }).set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(200);
-                                    expect(response.body).toMatchObject(expect.objectContaining(userPayload));
+                                    expect(response.body).toMatchObject(expect.objectContaining(followingPayload));
                                     expect(response.body.followedUsers.length).toBeGreaterThan(0);
-                                    expect(response.body.followedUsers).toContainEqual(userToFollowPayload);
+                                    expect(response.body.followedUsers).toContainEqual(userID);
                                 });
                         });
                     });
@@ -307,10 +316,10 @@ describe("User", () => {
 
             describe("Given user is not logged", () => {
                 it("should return a 401 unauthorized", async () => {
-                    const toFollowUsername = 'TestTestyToFollow';
+                    const toFollowID = '66326642b6e5d026db70f695';
                     const invalidToken = "Bearer none"
                     await supertest(app).put(`/api/users/follow`).send({
-                        username: toFollowUsername
+                        id: toFollowID
                     }).set({"Authorization": invalidToken, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(401);
@@ -324,22 +333,22 @@ describe("User", () => {
                 describe("Given user to follow exists", () => {
                     it("should return a 400 bad request", async () => {
                         const userID = '66326642b6e5d026db70f695';
-                        const toFollowUsername = 'TestTestyToFollow';
-                        const userToFollowPayload = {
-                            _id: userID,
-                            name: "TestToFollow",
-                            username: toFollowUsername,
-                            email: "test@tofollow.com",
+                        const userLoggedPayload = {
+                            _id: userPayload.id,
+                            name: "Test",
+                            username: "TestTesty",
+                            email: "test@test.com",
                             password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                             role: "USER",
                         };
-                        const userMock = jest.spyOn(User, "findOne")
-                            .mockResolvedValueOnce(userToFollowPayload);
-                        const user2Mock = jest.spyOn(User, "findOneAndUpdate")
+
+                        const userMock = jest.spyOn(User, "findById")
+                            .mockResolvedValueOnce(userLoggedPayload);
+                        const followMock = jest.spyOn(User, "findOneAndUpdate")
                             .mockResolvedValueOnce(null);
-                        await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/follow`).send({
-                                username: toFollowUsername
+                                id: userID
                             }).set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(400);
@@ -357,35 +366,36 @@ describe("User", () => {
                 describe("Given user to unfollow exists", () => {
                     it("should return a 200 and the logged user without the user to unfollow", async () => {
                         const userID = '66326642b6e5d026db70f695';
-                        const toUnfollowUsername = 'TestTestyToFollow';
-                        const userToUnfollowPayload = {
-                            _id: userID,
-                            name: "TestToUnfollow",
-                            username: toUnfollowUsername,
-                            email: "test@tounfollow.com",
+                        const userLoggedPayload = {
+                            _id: userPayload.id,
+                            name: "Test",
+                            username: "TestTesty",
+                            email: "test@test.com",
                             password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                             role: "USER",
+                            followedUsers: [userID]
                         };
-                        const userPayload = {
-                            _id: userID,
+
+                        const unfollowingPayload = {
+                            _id: userPayload.id,
                             name: "Test",
                             username: "TestTesty",
                             email: "test@test.com",
                             password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                             role: "USER",
                             followedUsers: []
-                        };
-                        const userMock = jest.spyOn(User, "findOne")
-                            .mockResolvedValueOnce(userToUnfollowPayload);
-                        const user2Mock = jest.spyOn(User, "findOneAndUpdate")
-                            .mockResolvedValueOnce(userPayload);
-                        await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+                        }
+                        const userMock = jest.spyOn(User, "findById")
+                            .mockResolvedValueOnce(userLoggedPayload);
+                        const followMock = jest.spyOn(User, "findOneAndUpdate")
+                            .mockResolvedValueOnce(unfollowingPayload);
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/unfollow`).send({
-                                username: toUnfollowUsername
+                                id: userID
                             }).set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(200);
-                                    expect(response.body).toMatchObject(expect.objectContaining(userPayload));
+                                    expect(response.body).toMatchObject(expect.objectContaining(unfollowingPayload));
                                     expect(response.body.followedUsers.length).toEqual(0);
                                 });
                         });
@@ -395,10 +405,10 @@ describe("User", () => {
 
             describe("Given user is not logged", () => {
                 it("should return a 401 unauthorized", async () => {
-                    const toUnfollowUsername = 'TestTestyToUnfollow';
+                    const userID = '66326642b6e5d026db70f695';
                     const invalidToken = "Bearer none"
                     await supertest(app).put(`/api/users/unfollow`).send({
-                        username: toUnfollowUsername
+                        id: userID
                     }).set({"Authorization": invalidToken, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(401);
@@ -412,22 +422,22 @@ describe("User", () => {
                 describe("Given user to unfollow exists", () => {
                     it("should return a 400 bad request", async () => {
                         const userID = '66326642b6e5d026db70f695';
-                        const toUnfollowUsername = 'TestTestyToUnfollow';
-                        const userToUnfollowPayload = {
-                            _id: userID,
-                            name: "TestToFollow",
-                            username: toUnfollowUsername,
-                            email: "test@tounfollow.com",
+                        const userLoggedPayload = {
+                            _id: userPayload.id,
+                            name: "Test",
+                            username: "TestTesty",
+                            email: "test@test.com",
                             password: "$2a$10$lJaCyNyy.zpnDOTO9Gb2YOx6YO8EuBow3nTEVmn3vl58Ns46665Hi",
                             role: "USER",
                         };
-                        const userMock = jest.spyOn(User, "findOne")
-                            .mockResolvedValueOnce(userToUnfollowPayload);
+
+                        const userMock = jest.spyOn(User, "findById")
+                            .mockResolvedValueOnce(userLoggedPayload);
                         const user2Mock = jest.spyOn(User, "findOneAndUpdate")
                             .mockResolvedValueOnce(null);
-                        await middleware.generateToken(userPayload.username, userPayload.role).then(async (token: any) => {
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/unfollow`).send({
-                                username: toUnfollowUsername
+                                id: userID
                             }).set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(400);
