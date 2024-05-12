@@ -17,7 +17,7 @@ export class TopicController {
     }
 
     async deleteTopic(req: any, res: any) {
-        Topic.findByIdAndDelete(sanitize(req.body.id))
+        Topic.findByIdAndDelete(sanitize(req.params.id))
             .then((data: any) =>
                 res.status(StatusCodes.NO_CONTENT).json(data))
             .catch((e: any) => {
@@ -37,6 +37,20 @@ export class TopicController {
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+                console.log(e);
+            })
+    }
+
+    async putTopic(req: any, res: any) {
+        Topic.findByIdAndUpdate(sanitize(req.params.id), {
+                name: sanitize(req.body.name)
+            },
+            {returnOriginal: false})
+            .then((data: any) => {
+                res.status(StatusCodes.OK).json(data);
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.NOT_FOUND).json("Topic not found");
                 console.log(e);
             })
     }

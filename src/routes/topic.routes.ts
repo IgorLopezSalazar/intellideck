@@ -14,13 +14,21 @@ router.post('/topics',(req: any, res: any, next: any) => {
     return topicController.postTopic(req, res);
 })
 
+router.put('/topics/:id',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return middleware.isAdmin(req, res, next);
+}, (req: any, res: any) => {
+    return topicController.putTopic(req, res);
+})
+
 router.get('/topics',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return topicController.getTopics(req, res);
 })
 
-router.delete('/topics',(req: any, res: any, next: any) => {
+router.delete('/topics/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return middleware.isAdmin(req, res, next);
