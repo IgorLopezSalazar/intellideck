@@ -94,33 +94,12 @@ export class UserController {
 
     }
 
-    async searchUserByID(req: any, res: any, next: any) {
-        User.findById(sanitize(req.body.id))
-            .then((toFollow: any) => {
-                console.log(toFollow)
-                req.foundUser = toFollow;
-                next();
-            })
-            .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("User not found"));
-    }
-
-    async getLoggedUser(req: any, res: any, next: any) {
-        User.findById(sanitize(req.decoded.id))
-            .then((toFollow: any) => {
-                req.loggedUser = toFollow;
-                next();
-            })
-            .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("User not found"));
-    }
-
     async putFollowUser(req: any, res: any) {
         User.findOneAndUpdate({
-                _id: req.decoded.id,
-                "followedUsers": {$nin: [req.foundUser._id]}
+                _id: req.decoded._id,
+                "followedUsers": {$nin: [sanitize(req.body.id)]}
             },
-            {"$push": {"followedUsers": req.foundUser._id}},
+            {"$push": {"followedUsers": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
                 if (!loggedUser) {
@@ -137,10 +116,10 @@ export class UserController {
 
     async putUnfollowUser(req: any, res: any) {
         User.findOneAndUpdate({
-                _id: req.decoded.id,
-                "followedUsers": {$in: [req.foundUser._id]}
+                _id: req.decoded._id,
+                "followedUsers": {$in: [sanitize(req.body.id)]}
             },
-            {"$pull": {"followedUsers": req.foundUser._id}},
+            {"$pull": {"followedUsers": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
                 if (!loggedUser) {
@@ -168,14 +147,14 @@ export class UserController {
 
     async putFollowDeck(req: any, res: any) {
         User.findOneAndUpdate({
-                _id: req.decoded.id,
-                "followedDecks._id": {$nin: [req.deck._id]}
+                _id: req.decoded._id,
+                "followedDecks": {$nin: [sanitize(req.body.id)]}
             },
-            {"$push": {"followedDecks": req.deck._id}},
+            {"$push": {"followedDecks": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
                 if (!loggedUser) {
-                    res.status(StatusCodes.BAD_REQUEST).json("User already followed");
+                    res.status(StatusCodes.BAD_REQUEST).json("Deck already followed");
                 } else {
                     res.status(StatusCodes.OK).json(loggedUser);
                 }
@@ -184,5 +163,65 @@ export class UserController {
                 res.status(StatusCodes.NOT_FOUND).json("User not found");
                 console.log(e);
             });
+    }
+
+    async putUnfollowDeck(req: any, res: any) {
+        User.findOneAndUpdate({
+                _id: req.decoded._id,
+                "followedDecks": {$in: [sanitize(req.body.id)]}
+            },
+            {"$pull": {"followedDecks": sanitize(req.body.id)}},
+            {returnOriginal: false})
+            .then((loggedUser: any) => {
+                if (!loggedUser) {
+                    res.status(StatusCodes.BAD_REQUEST).json("Deck already followed");
+                } else {
+                    res.status(StatusCodes.OK).json(loggedUser);
+                }
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                console.log(e);
+            });
+    }
+
+    getDecksFollowed(req: any, res: any) {
+        User.aggregate([
+            {
+                "$match":
+                    {'_id': new mongoose.Types.ObjectId(sanitize(req.params.id))}
+            },
+            {
+                "$lookup": {
+                    "from": "decks",
+                    "foreignField": "_id",
+                    "localField": "followedDecks",
+                    "as": "followedDecks"
+                }
+            }
+        ])
+            .then((data: any) => {
+                if (!data || data[0].followedDecks.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data[0].followedDecks);
+                }
+            });
+    }
+
+    updateUser(req: any, res: any) {
+        User.findByIdAndUpdate(req.decoded._id,
+            {name: sanitize(req.body.name),
+                    username: sanitize(req.body.username),
+                    email: sanitize(req.body.email),
+                    profilePicture: sanitize(req.body.profilePicture)
+            },
+            {returnOriginal: false})
+            .then((data: any) =>
+                res.status(StatusCodes.OK).json(data))
+            .catch((e: any) => {
+                res.status(StatusCodes.CONFLICT).json("Email or username already in use");
+                console.log(e);
+            })
     }
 }
