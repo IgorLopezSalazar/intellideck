@@ -134,7 +134,7 @@ export class UserController {
             });
     }
 
-    getFollowers(req: any, res: any) {
+    async getFollowers(req: any, res: any) {
         User.find({"followedUsers": {$in: [sanitize(req.params.id)]}})
             .then((data: any[]) => {
                 if (data.length == 0) {
@@ -185,7 +185,7 @@ export class UserController {
             });
     }
 
-    getDecksFollowed(req: any, res: any) {
+    async getDecksFollowed(req: any, res: any) {
         User.aggregate([
             {
                 "$match":
@@ -209,7 +209,7 @@ export class UserController {
             });
     }
 
-    updateUser(req: any, res: any) {
+    async updateUser(req: any, res: any) {
         User.findByIdAndUpdate(req.decoded._id,
             {name: sanitize(req.body.name),
                     username: sanitize(req.body.username),

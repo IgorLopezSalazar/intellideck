@@ -1,6 +1,5 @@
-import mongoose, { Schema, model } from 'mongoose';
-import {DECK_DOCUMENT_NAME, deckSchema, IDeck} from "./deck.ts";
-
+import { Schema, model } from 'mongoose';
+import {IDeck} from "./deck.ts";
 export const USER_DOCUMENT_NAME = 'user';
 export const USER_COLLECTION_NAME = 'users';
 export interface IUser {

@@ -21,7 +21,7 @@ export class DeckController {
             })
     }
 
-    getUserDecks(req: any, res: any) {
+    async getUserDecks(req: any, res: any) {
         Deck.find({"creator": sanitize(req.params.id)})
             .then((data: any[]) => {
                 if (data.length == 0) {
@@ -32,7 +32,7 @@ export class DeckController {
             });
     }
 
-    findById(req: any, res: any, next: any) {
+    async findById(req: any, res: any, next: any) {
         Deck.findById(sanitize(req.body.id))
             .then((data: any) => {
                 if (!data) {
@@ -51,7 +51,8 @@ export class DeckController {
             }, {
                 title: sanitize(req.body.title),
                 description: sanitize(req.body.description),
-                image: sanitize(req.body.image)
+                image: sanitize(req.body.image),
+                topic: sanitize(req.body.topic)
             },
             {returnOriginal: false})
             .then((data: any) => {

@@ -23,18 +23,10 @@ export class Middleware {
     }
 
     async isAdmin(req: any, res:any, next: any) {
-        this.tokenProvided(req, res)
-            .then(token => {
-                if (token) {
-                    jwt.verify(token, this.readPrivateKey(), (err:any, decoded:any) => {
-                        if (!err && decoded.role == "ADMIN") {
-                            req.decoded = decoded;
-                            next();
-                        } else
-                            res.status(StatusCodes.UNAUTHORIZED).json("You are not logged");
-                    });
-                }
-            })
+        if (req.decoded.role == "ADMIN") {
+            next();
+        } else
+            res.status(StatusCodes.UNAUTHORIZED).json("You do not have permissions");
     }
 
     async generateToken(id: string, role: string) {
