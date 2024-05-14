@@ -14,7 +14,7 @@ router.post('/decks',(req: any, res: any, next: any) => {
     return deckController.postDeck(req, res);
 })
 
-router.get('/decks/:username',(req: any, res: any, next: any) => {
+router.get('/decks/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return deckController.getUserDecks(req, res);

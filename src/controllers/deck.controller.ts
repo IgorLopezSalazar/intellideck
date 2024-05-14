@@ -22,18 +22,23 @@ export class DeckController {
     }
 
     async getUserDecks(req: any, res: any) {
-        Deck.find({"creator": sanitize(req.params.id)})
-            .then((data: any[]) => {
-                if (data.length == 0) {
-                    res.status(StatusCodes.NO_CONTENT).json();
-                } else {
-                    res.status(StatusCodes.OK).json(data);
-                }
-            });
+        Deck.find({
+            creator: sanitize(req.params.id),
+            isPublished: true
+        }).then((data: any[]) => {
+            if (data.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(data);
+            }
+        });
     }
 
     async findById(req: any, res: any, next: any) {
-        Deck.findById(sanitize(req.body.id))
+        Deck.findOne({
+            _id: sanitize(req.body.id),
+            isPublished: true
+        })
             .then((data: any) => {
                 if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json("The specified deck was not found");
@@ -56,7 +61,7 @@ export class DeckController {
             },
             {returnOriginal: false})
             .then((data: any) => {
-                if(!data) {
+                if (!data) {
                     res.status(StatusCodes.BAD_REQUEST).json("Deck already published or not yours");
                 } else {
                     res.status(StatusCodes.OK).json(data);

@@ -9,7 +9,6 @@ import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
 import mongoose from "mongoose";
 
-
 const SALT_ROUNDS: number = 10;
 const middleware: Middleware = new Middleware();
 
@@ -66,7 +65,7 @@ export class UserController {
                 }
             })
             .catch((e: any) =>
-                res.status(StatusCodes.NOT_FOUND).json("No result found"));
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred, please try again later."));
     }
 
     async login(req: any, res: any) {
@@ -109,7 +108,7 @@ export class UserController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
                 console.log(e);
             });
     }
@@ -129,7 +128,7 @@ export class UserController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
                 console.log(e);
             });
     }
@@ -200,7 +199,7 @@ export class UserController {
                 }
             }
         ])
-            .then((data: any) => {
+            .then((data: any[]) => {
                 if (!data || data[0].followedDecks.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
                 } else {
