@@ -47,10 +47,15 @@ export class TopicController {
             },
             {returnOriginal: false})
             .then((data: any) => {
-                res.status(StatusCodes.OK).json(data);
+                if(!data) {
+                    res.status(StatusCodes.NOT_FOUND).json("Topic not found");
+                }
+                else {
+                    res.status(StatusCodes.OK).json(data);
+                }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("Topic not found");
+                res.status(StatusCodes.BAD_REQUEST).json("The topic could not be updated");
                 console.log(e);
             })
     }

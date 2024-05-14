@@ -5,7 +5,6 @@ import {Deck} from "../../src/models/deck.ts";
 import {Middleware} from "../../src/middleware.ts";
 import {User} from "../../src/models/user.ts";
 
-jest.useFakeTimers();
 const middleware = new Middleware();
 
 const userPayload = {
