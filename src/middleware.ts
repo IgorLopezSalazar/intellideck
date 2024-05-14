@@ -22,8 +22,15 @@ export class Middleware {
             })
     }
 
-    async generateToken(username: string, role: string) {
-        return "Bearer " + jwt.sign({ "username": username, "role": role }, this.readPrivateKey(), {
+    async isAdmin(req: any, res:any, next: any) {
+        if (req.decoded.role == "ADMIN") {
+            next();
+        } else
+            res.status(StatusCodes.UNAUTHORIZED).json("You do not have permissions");
+    }
+
+    async generateToken(id: string, role: string) {
+        return "Bearer " + jwt.sign({ "_id": id, "role": role }, this.readPrivateKey(), {
             expiresIn: '1h',
             algorithm: 'RS256'
         });
