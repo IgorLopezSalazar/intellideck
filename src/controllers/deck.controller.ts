@@ -50,25 +50,44 @@ export class DeckController {
 
     async updateDeck(req: any, res: any) {
         Deck.findOneAndUpdate({
-                _id: sanitize(req.params.id),
-                isPublished: false,
-                creator: req.decoded._id
-            }, {
-                title: sanitize(req.body.title),
-                description: sanitize(req.body.description),
-                image: sanitize(req.body.image),
-                topic: sanitize(req.body.topic)
-            },
-            {returnOriginal: false})
+            _id: sanitize(req.params.id),
+            isPublished: false
+        }, {
+            title: sanitize(req.body.title),
+            description: sanitize(req.body.description),
+            image: sanitize(req.body.image),
+            topic: sanitize(req.body.topic),
+            tags: sanitize(req.body.tags)
+        }, {returnOriginal: false})
+            .populate("topic")
+            .populate("tags")
+            .exec()
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck already published or not yours");
+                    res.status(StatusCodes.BAD_REQUEST).json("Deck already published");
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("Data sent was not correct");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+                console.log(e);
+            })
+    }
+
+    async verifyCreator(req: any, res: any, next: any) {
+        Deck.findOne({
+            _id: sanitize(req.params.id),
+            creator: req.decoded._id
+        }).then((data: any) => {
+            if (!data) {
+                res.status(StatusCodes.BAD_REQUEST).json("Deck not yours");
+            } else {
+                next();
+            }
+        })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
                 console.log(e);
             })
     }

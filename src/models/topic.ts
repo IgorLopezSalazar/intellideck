@@ -7,7 +7,7 @@ export interface ITopic {
 }
 
 export const topicSchema = new Schema<ITopic>({
-    name: { type: Schema.Types.String, required: true },
+    name: { type: Schema.Types.String, required: true, unique: true }
 });
 
 export const Topic = model<ITopic>(TOPIC_DOCUMENT_NAME, topicSchema, TOPIC_COLLECTION_NAME);

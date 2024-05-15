@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import {IUser} from "./user.ts";
 import {ITopic} from "./topic.ts";
+import {ITag} from "./tag.js";
 
 export const DECK_DOCUMENT_NAME = 'deck';
 export const DECK_COLLECTION_NAME = 'decks';
@@ -11,6 +12,7 @@ export interface IDeck {
     isPublished : boolean;
     creator? : IUser;
     topic : ITopic;
+    tags: ITag[];
 }
 
 export const deckSchema = new Schema<IDeck>({
@@ -19,7 +21,8 @@ export const deckSchema = new Schema<IDeck>({
     image: { type: Schema.Types.String },
     isPublished: { type: Schema.Types.Boolean, required: true },
     creator: { type: Schema.Types.ObjectId, ref: 'user' },
-    topic: { type: Schema.Types.ObjectId, ref: 'topic' }
+    topic: { type: Schema.Types.ObjectId, ref: 'topic' },
+    tags: [{ type: Schema.Types.ObjectId, ref: 'tag' }]
 });
 
 export const Deck = model<IDeck>(DECK_DOCUMENT_NAME, deckSchema, DECK_COLLECTION_NAME);

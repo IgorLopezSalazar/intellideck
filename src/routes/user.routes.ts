@@ -20,14 +20,18 @@ router.get('/users/followers/:id',(req: any, res: any, next: any) => {
 
 router.put('/users/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return controller.putFollowUser(req, res, next);
 }, (req: any, res: any) => {
-    return controller.putFollowUser(req, res);
+    return controller.validateFollowUnfollow(req, res);
 })
 
 router.put('/users/unfollow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next:any) => {
+    return controller.putUnfollowUser(req, res, next);
 }, (req: any, res: any) => {
-    return controller.putUnfollowUser(req, res);
+    return controller.validateFollowUnfollow(req, res);
 })
 
 router.post('/users', (req: any, res: any) => {
