@@ -56,9 +56,12 @@ export class DeckController {
                 title: sanitize(req.body.title),
                 description: sanitize(req.body.description),
                 image: sanitize(req.body.image),
-                topic: sanitize(req.body.topic)
-            },
-            {returnOriginal: false})
+                topic: sanitize(req.body.topic),
+                tags: sanitize(req.body.tags)
+            }, {returnOriginal: false})
+            .populate("topic")
+            .populate("tags")
+            .exec()
             .then((data: any) => {
                 if (!data) {
                     res.status(StatusCodes.BAD_REQUEST).json("Deck already published");
@@ -74,58 +77,18 @@ export class DeckController {
 
     async verifyCreator(req: any, res: any, next: any) {
         Deck.findOne({
-                _id: sanitize(req.params.id),
-                creator: req.decoded._id
-            }).then((data: any) => {
-                if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck not yours");
-                } else {
-                    next();
-                }
-            })
+            _id: sanitize(req.params.id),
+            creator: req.decoded._id
+        }).then((data: any) => {
+            if (!data) {
+                res.status(StatusCodes.BAD_REQUEST).json("Deck not yours");
+            } else {
+                next();
+            }
+        })
             .catch((e: any) => {
                 res.status(StatusCodes.BAD_REQUEST).json("Data sent was not correct");
                 console.log(e);
             })
-    }
-
-    async addTag(req: any, res: any) {
-        Deck.findOneAndUpdate({
-                _id: req.params.id,
-                "tags": {$nin: [sanitize(req.tag._id)]}
-            },
-            {"$push": {"tags": sanitize(req.tag._id)}},
-            {returnOriginal: false})
-            .then((deck: any) => {
-                if (!deck) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Tag already assigned to deck");
-                } else {
-                    res.status(StatusCodes.OK).json(deck);
-                }
-            })
-            .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("Deck not found");
-                console.log(e);
-            });
-    }
-
-    async removeTag(req: any, res: any) {
-        Deck.findOneAndUpdate({
-                _id: req.params.id,
-                "tags": {$in: [sanitize(req.tag._id)]}
-            },
-            {"$pull": {"tags": sanitize(req.tag._id)}},
-            {returnOriginal: false})
-            .then((deck: any) => {
-                if (!deck) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Tag already not assigned to deck");
-                } else {
-                    res.status(StatusCodes.OK).json(deck);
-                }
-            })
-            .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("Deck not found");
-                console.log(e);
-            });
     }
 }

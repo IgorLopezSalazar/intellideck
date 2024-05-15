@@ -3,11 +3,13 @@ import {Middleware} from "../middleware.ts";
 import {DeckController} from "../controllers/deck.controller.ts";
 import {UserController} from "../controllers/user.controller.ts";
 import {TagController} from "../controllers/tag.controller.ts";
+import {TopicController} from "../controllers/topic.controller.ts";
 
 const router = express.Router();
 const deckController = new DeckController();
 const userController = new UserController();
 const tagController = new TagController();
+const topicController = new TopicController();
 const middleware: Middleware = new Middleware();
 
 router.post('/decks',(req: any, res: any, next: any) => {
@@ -52,32 +54,12 @@ router.put('/decks/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return topicController.validateTopic(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return tagController.getTags(req, res, next);
 }, (req: any, res: any) => {
     return deckController.updateDeck(req, res);
-})
-
-router.put('/decks/:id/tag/add',(req: any, res: any, next: any) => {
-    return middleware.isAuthenticated(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return deckController.verifyCreator(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return tagController.getTag(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return tagController.ensureTagExistence(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.addTag(req, res);
-})
-
-router.put('/decks/:id/tag/remove',(req: any, res: any, next: any) => {
-    return middleware.isAuthenticated(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return deckController.verifyCreator(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return tagController.getTag(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return tagController.ensureTagExistence(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.removeTag(req, res);
 })
 
 export{ router };

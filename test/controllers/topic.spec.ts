@@ -25,8 +25,7 @@ describe("Topic", () => {
     describe("GET Topics", () => {
         describe("Given topics exist", () => {
             it("should return a 200 and the topics", async () => {
-                const topicMock = jest.spyOn(Topic, "find")
-                    .mockResolvedValueOnce([responsePayload]);
+                jest.spyOn(Topic, "find").mockResolvedValueOnce([responsePayload]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/topics/`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -40,8 +39,7 @@ describe("Topic", () => {
 
         describe("Given no topic exists", () => {
             it("should return a 204", async () => {
-                const topicMock = jest.spyOn(Topic, "find")
-                    .mockResolvedValueOnce([]);
+                jest.spyOn(Topic, "find").mockResolvedValueOnce([]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/topics/`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -57,7 +55,7 @@ describe("Topic", () => {
         describe("Given logged user is admin", () => {
             describe("Given data is valid", () => {
                 it("should return a 201 and the created topic", async () => {
-                    const topicMock = jest.spyOn(Topic, "create")
+                    jest.spyOn(Topic, "create")
                         .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
                             resolve(responsePayload);
                         }));
@@ -74,8 +72,7 @@ describe("Topic", () => {
 
             describe("Given data is not valid", () => {
                 it("should return a 400", async () => {
-                    const topicMock = jest.spyOn(Topic, "create")
-                        .mockRejectedValueOnce(new Error());
+                    jest.spyOn(Topic, "create").mockRejectedValueOnce(new Error());
                     await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                         await supertest(app).post(`/api/topics/`)
                             .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -104,8 +101,7 @@ describe("Topic", () => {
         describe("Given logged user is admin", () => {
             describe("Given data is valid", () => {
                 it("should return a 200 and the updated topic", async () => {
-                    const topicMock = jest.spyOn(Topic, "findByIdAndUpdate")
-                        .mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Topic, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload);
                     await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/topics/${responsePayload._id}`).send({name: responsePayload.name})
                             .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -120,8 +116,7 @@ describe("Topic", () => {
             describe("Given data is not valid", () => {
                 describe("Given id not found", () => {
                     it("should return a 404", async () => {
-                        const topicMock = jest.spyOn(Topic, "findByIdAndUpdate")
-                            .mockResolvedValueOnce(null);
+                        jest.spyOn(Topic, "findByIdAndUpdate").mockResolvedValueOnce(null);
                         await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/topics/${responsePayload._id}`).send({name: responsePayload.name})
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -134,8 +129,7 @@ describe("Topic", () => {
 
                 describe("Given name not sent", () => {
                     it("should return a 400", async () => {
-                        const topicMock = jest.spyOn(Topic, "findByIdAndUpdate")
-                            .mockRejectedValueOnce(new Error());
+                        jest.spyOn(Topic, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
                         await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/topics/${responsePayload._id}`).send({name: responsePayload.name})
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -164,8 +158,7 @@ describe("Topic", () => {
     describe("DELETE Topic", () => {
         describe("Given logged user is admin", () => {
             it("should return a 204", async () => {
-                const topicMock = jest.spyOn(Topic, "findByIdAndDelete")
-                    .mockResolvedValueOnce(null);
+                jest.spyOn(Topic, "findByIdAndDelete").mockResolvedValueOnce(null);
                 await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                     await supertest(app).delete(`/api/topics/${responsePayload._id}`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})

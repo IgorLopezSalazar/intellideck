@@ -14,25 +14,13 @@ const middleware: Middleware = new Middleware();
 
 export class UserController {
     async getFollowedUsers(req: any, res: any) {
-        User.aggregate([
-            {
-                "$match":
-                    {'_id': new mongoose.Types.ObjectId(sanitize(req.params.id))}
-            },
-            {
-                "$lookup": {
-                    "from": "users",
-                    "foreignField": "_id",
-                    "localField": "followedUsers",
-                    "as": "followedUsers"
-                }
-            }
-        ])
+        User.findById(sanitize(req.params.id), 'followedUsers')
+            .populate("followedUsers").exec()
             .then((data: any) => {
-                if (!data || data[0].followedUsers.length == 0) {
+                if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
                 } else {
-                    res.status(StatusCodes.OK).json(data[0].followedUsers);
+                    res.status(StatusCodes.OK).json(data);
                 }
             });
     }
@@ -181,25 +169,13 @@ export class UserController {
     }
 
     async getDecksFollowed(req: any, res: any) {
-        User.aggregate([
-            {
-                "$match":
-                    {'_id': new mongoose.Types.ObjectId(sanitize(req.params.id))}
-            },
-            {
-                "$lookup": {
-                    "from": "decks",
-                    "foreignField": "_id",
-                    "localField": "followedDecks",
-                    "as": "followedDecks"
-                }
-            }
-        ])
-            .then((data: any[]) => {
-                if (!data || data[0].followedDecks.length == 0) {
+        User.findById(sanitize(req.params.id), 'followedDecks')
+            .populate("followedDecks").exec()
+            .then((data: any) => {
+                if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
                 } else {
-                    res.status(StatusCodes.OK).json(data[0].followedDecks);
+                    res.status(StatusCodes.OK).json(data);
                 }
             });
     }

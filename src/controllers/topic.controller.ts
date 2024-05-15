@@ -41,6 +41,21 @@ export class TopicController {
             })
     }
 
+    async validateTopic(req: any, res: any, next: any) {
+        Topic.findById(sanitize(req.body.topic))
+            .then((data: any) => {
+                if (!data && req.body.topic) {
+                    res.status(StatusCodes.BAD_REQUEST).json("The topic does not exist");
+                } else {
+                    next();
+                }
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+                console.log(e);
+            })
+    }
+
     async putTopic(req: any, res: any) {
         Topic.findByIdAndUpdate(sanitize(req.params.id), {
                 name: sanitize(req.body.name)
