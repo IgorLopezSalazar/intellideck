@@ -10,6 +10,8 @@ router.get('/tags/:name',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return tagController.getTag(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return tagController.checkPostRedirect(req, res, next);
 }, (req: any, res: any) => {
     return tagController.postTag(req, res);
 })
