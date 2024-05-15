@@ -93,7 +93,7 @@ export class UserController {
 
     }
 
-    async putFollowUser(req: any, res: any) {
+    async putFollowUser(req: any, res: any, next: any) {
         User.findOneAndUpdate({
                 _id: req.decoded._id,
                 "followedUsers": {$nin: [sanitize(req.body.id)]}
@@ -101,11 +101,8 @@ export class UserController {
             {"$push": {"followedUsers": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
-                if (!loggedUser) {
-                    res.status(StatusCodes.BAD_REQUEST).json("User already followed");
-                } else {
-                    res.status(StatusCodes.OK).json(loggedUser);
-                }
+                req.followUnfollowData = loggedUser;
+                next();
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
@@ -113,7 +110,7 @@ export class UserController {
             });
     }
 
-    async putUnfollowUser(req: any, res: any) {
+    async putUnfollowUser(req: any, res: any, next: any) {
         User.findOneAndUpdate({
                 _id: req.decoded._id,
                 "followedUsers": {$in: [sanitize(req.body.id)]}
@@ -121,11 +118,8 @@ export class UserController {
             {"$pull": {"followedUsers": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
-                if (!loggedUser) {
-                    res.status(StatusCodes.BAD_REQUEST).json("User already not followed");
-                } else {
-                    res.status(StatusCodes.OK).json(loggedUser);
-                }
+                req.followUnfollowData = loggedUser;
+                next();
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
@@ -144,7 +138,7 @@ export class UserController {
             });
     }
 
-    async putFollowDeck(req: any, res: any) {
+    async putFollowDeck(req: any, res: any, next: any) {
         User.findOneAndUpdate({
                 _id: req.decoded._id,
                 "followedDecks": {$nin: [sanitize(req.body.id)]}
@@ -152,19 +146,16 @@ export class UserController {
             {"$push": {"followedDecks": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
-                if (!loggedUser) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck already followed");
-                } else {
-                    res.status(StatusCodes.OK).json(loggedUser);
-                }
+                req.followUnfollowData = loggedUser;
+                next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
                 console.log(e);
             });
     }
 
-    async putUnfollowDeck(req: any, res: any) {
+    async putUnfollowDeck(req: any, res: any, next: any) {
         User.findOneAndUpdate({
                 _id: req.decoded._id,
                 "followedDecks": {$in: [sanitize(req.body.id)]}
@@ -172,16 +163,21 @@ export class UserController {
             {"$pull": {"followedDecks": sanitize(req.body.id)}},
             {returnOriginal: false})
             .then((loggedUser: any) => {
-                if (!loggedUser) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck already followed");
-                } else {
-                    res.status(StatusCodes.OK).json(loggedUser);
-                }
+                req.followUnfollowData = loggedUser;
+                next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NOT_FOUND).json("User not found");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
                 console.log(e);
             });
+    }
+
+    async validateFollowUnfollow(req: any, res: any) {
+        if (!req.followUnfollowData) {
+            res.status(StatusCodes.BAD_REQUEST).json("The requested action could not be done");
+        } else {
+            res.status(StatusCodes.OK).json(req.followUnfollowData);
+        }
     }
 
     async getDecksFollowed(req: any, res: any) {

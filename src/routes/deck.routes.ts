@@ -26,16 +26,20 @@ router.put('/decks/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
     return deckController.findById(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.putFollowDeck(req, res, next);
 }, (req: any, res: any) => {
-    return userController.putFollowDeck(req, res);
+    return userController.validateFollowUnfollow(req, res);
 })
 
 router.put('/decks/unfollow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
     return deckController.findById(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.putUnfollowDeck(req, res, next);
 }, (req: any, res: any) => {
-    return userController.putUnfollowDeck(req, res);
+    return userController.validateFollowUnfollow(req, res);
 })
 
 router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
