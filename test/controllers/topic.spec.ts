@@ -49,6 +49,19 @@ describe("Topic", () => {
                 });
             });
         });
+
+        describe("Given Internal Error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Topic, "find").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/topics/`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
     });
 
     describe("POST Topic", () => {
@@ -165,6 +178,19 @@ describe("Topic", () => {
                         .then(response => {
                             expect(response.status).toEqual(204);
                         });
+                });
+            });
+
+            describe("Given Internal Error occurs", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Topic, "findByIdAndDelete").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/topics/${responsePayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
                 });
             });
         });

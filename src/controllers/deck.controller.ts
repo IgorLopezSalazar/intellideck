@@ -50,15 +50,15 @@ export class DeckController {
 
     async updateDeck(req: any, res: any) {
         Deck.findOneAndUpdate({
-                _id: sanitize(req.params.id),
-                isPublished: false
-            }, {
-                title: sanitize(req.body.title),
-                description: sanitize(req.body.description),
-                image: sanitize(req.body.image),
-                topic: sanitize(req.body.topic),
-                tags: sanitize(req.body.tags)
-            }, {returnOriginal: false})
+            _id: sanitize(req.params.id),
+            isPublished: false
+        }, {
+            title: sanitize(req.body.title),
+            description: sanitize(req.body.description),
+            image: sanitize(req.body.image),
+            topic: sanitize(req.body.topic),
+            tags: sanitize(req.body.tags)
+        }, {returnOriginal: false})
             .populate("topic")
             .populate("tags")
             .exec()
@@ -70,7 +70,7 @@ export class DeckController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("Data sent was not correct");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
                 console.log(e);
             })
     }
@@ -87,7 +87,7 @@ export class DeckController {
             }
         })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("Data sent was not correct");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
                 console.log(e);
             })
     }

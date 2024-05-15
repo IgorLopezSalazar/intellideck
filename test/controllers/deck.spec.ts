@@ -66,7 +66,7 @@ describe("Deck", () => {
     });
 
     describe("PUT deck", () => {
-        describe("Given deck is not published and is owned by logged deck", () => {
+        describe("Given deck is not published and is owned by logged user", () => {
             it("should return a 200 and the updated object", async () => {
                 jest.spyOn(Deck, 'findOneAndUpdate').mockImplementation(() => ({
                     populate: () => ({
@@ -79,7 +79,7 @@ describe("Deck", () => {
                     })
                 } as any));
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
-                jest.spyOn(Topic, "findById").mockResolvedValueOnce({});
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
                 jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
 
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
@@ -93,7 +93,91 @@ describe("Deck", () => {
             });
         });
 
-        describe("Given deck is either published or not owned by logged deck", () => {
+        describe("Given logged user is not the creator of the deck", () => {
+            it("should return a 400", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck"})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(400);
+                        });
+                });
+            });
+        });
+
+        describe("Given Internal Error occurs while validating creator", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck"})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
+        describe("Given the topic was not found", () => {
+            it("should return a 400", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", topic: "none"})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(400);
+                        });
+                });
+            });
+        });
+
+        describe("Given Internal Error occurs while validating topic", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Topic, "findById").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", topic: "none"})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
+        describe("Given at least one tag was not found", () => {
+            it("should return a 400", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
+                jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", tags: ["none"]})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(400);
+                        });
+                });
+            });
+        });
+
+        describe("Given Internal Error occurs while validating tags", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
+                jest.spyOn(Tag, "find").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck"})
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
+        describe("Given deck is published", () => {
             it("should return a 400", async () => {
                 jest.spyOn(Deck, 'findOneAndUpdate').mockImplementation(() => ({
                     populate: () => ({
@@ -106,7 +190,7 @@ describe("Deck", () => {
                     })
                 } as any));
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
-                jest.spyOn(Topic, "findById").mockResolvedValueOnce({});
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
                 jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck"})
@@ -190,6 +274,20 @@ describe("Deck", () => {
     });
 
     describe("PUT Follow deck", () => {
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
         describe("Given deck is not followed", () => {
             describe("Given deck to follow exists", () => {
                 it("should return a 200 and the logged user following the deck to follow", async () => {
@@ -244,6 +342,20 @@ describe("Deck", () => {
     });
 
     describe("PUT Unfollow deck", () => {
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
         describe("Given deck is followed", () => {
             describe("Given deck to unfollow exists", () => {
                 it("should return a 200 and the logged user without the deck to unfollow", async () => {

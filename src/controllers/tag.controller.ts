@@ -19,7 +19,7 @@ export class TagController {
             })
     }
 
-    async getTags(req: any, res: any, next: any) {
+    async validateTags(req: any, res: any, next: any) {
         Tag.find({name: {$nin: [sanitize(req.body.tags)]}}, "_id")
             .then((data: any) => {
                 if (req.body.tags && req.body.tags.length != data.length) {
@@ -55,7 +55,7 @@ export class TagController {
         })
         Tag.create(tag)
             .then((data: any) => {
-                res.status(StatusCodes.OK).json(data);
+                res.status(StatusCodes.CREATED).json(data);
             })
             .catch((e: any) => {
                 res.status(StatusCodes.BAD_REQUEST).json("The tag did not exist and could not be created");

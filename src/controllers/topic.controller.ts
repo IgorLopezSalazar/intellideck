@@ -19,9 +19,9 @@ export class TopicController {
     async deleteTopic(req: any, res: any) {
         Topic.findByIdAndDelete(sanitize(req.params.id))
             .then((data: any) =>
-                res.status(StatusCodes.NO_CONTENT).json(data))
+                res.status(StatusCodes.NO_CONTENT).json())
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The topic could not be deleted");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
                 console.log(e);
             })
     }

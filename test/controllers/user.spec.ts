@@ -39,6 +39,18 @@ describe("User", () => {
                 });
             });
 
+            describe("Given Internal error occurs", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(User, "findById").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/${responsePayload._id}`)
+                            .set({"Authorization": token}).then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
             describe("Given valid user ID", () => {
                 it("should return a 200 and the user", async () => {
                     jest.spyOn(User, "findById").mockResolvedValueOnce(responsePayload);
@@ -224,6 +236,19 @@ describe("User", () => {
             });
         });
 
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(User, "findOne").mockRejectedValueOnce(new Error());
+                await supertest(app).post(`/api/login/`).send({
+                    username: responsePayload.username,
+                    password: "12345678"
+                }).set({'Content-type': 'application/json'})
+                    .then(response => {
+                        expect(response.status).toEqual(500);
+                    });
+            });
+        });
+
         describe("Given login data is invalid", () => {
             describe("Given username does not exist", () => {
                 it("should return a 401", async () => {
@@ -253,6 +278,19 @@ describe("User", () => {
     });
 
     describe("PUT Follow Method", () => {
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/users/follow`).send({id: responsePayload._id})
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
         describe("Given user is not followed", () => {
             describe("Given user is logged", () => {
                 describe("Given user to follow exists", () => {
@@ -318,6 +356,19 @@ describe("User", () => {
     });
 
     describe("PUT Unfollow Method", () => {
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/users/unfollow`).send({id: responsePayload._id})
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
         describe("Given user is followed", () => {
             describe("Given user is logged", () => {
                 describe("Given user to unfollow exists", () => {
