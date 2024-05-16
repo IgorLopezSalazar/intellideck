@@ -1,0 +1,47 @@
+import express from 'express';
+import {Middleware} from "../middleware.ts";
+import {DeckController} from "../controllers/deck.controller.ts";
+import {CardController} from "../controllers/card.controller.ts";
+
+const router = express.Router();
+const deckController = new DeckController();
+const cardController = new CardController();
+const middleware: Middleware = new Middleware();
+
+router.post('/decks/:id/cards',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyUnpublished(req, res, next);
+}, (req: any, res: any) => {
+    return cardController.postCard(req, res);
+})
+
+router.get('/decks/:id/cards',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any) => {
+    return cardController.getCardsOfDeck(req, res);
+})
+
+router.put('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyUnpublished(req, res, next);
+}, (req: any, res: any) => {
+    return cardController.putCard(req, res);
+})
+
+router.delete('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyUnpublished(req, res, next);
+}, (req: any, res: any) => {
+    return cardController.deleteCard(req, res);
+})
+
+export{ router };

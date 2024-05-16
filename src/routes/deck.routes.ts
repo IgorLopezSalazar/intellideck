@@ -55,6 +55,8 @@ router.put('/decks/:id',(req: any, res: any, next: any) => {
 }, (req: any, res: any, next: any) => {
     return deckController.verifyCreator(req, res, next);
 }, (req: any, res: any, next: any) => {
+    return deckController.verifyUnpublished(req, res, next);
+}, (req: any, res: any, next: any) => {
     return topicController.validateTopic(req, res, next);
 }, (req: any, res: any, next: any) => {
     return tagController.validateTags(req, res, next);

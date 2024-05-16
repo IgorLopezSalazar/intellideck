@@ -7,7 +7,6 @@ import sanitize from 'mongo-sanitize';
 import {User} from "../models/user.ts";
 import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
-import mongoose from "mongoose";
 
 const SALT_ROUNDS: number = 10;
 const middleware: Middleware = new Middleware();
