@@ -22,7 +22,7 @@ describe("Tag", () => {
             it("should return a 500", async () => {
                 jest.spyOn(Tag, "find").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/tags/like/Test`)
+                    await supertest(app).get(`/api/tags`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(500);
@@ -35,7 +35,7 @@ describe("Tag", () => {
             it("should return a 200 and the tags", async () => {
                 jest.spyOn(Tag, "find").mockResolvedValueOnce([responsePayload]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/tags/like/Test`)
+                    await supertest(app).get(`/api/tags`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(200);
@@ -49,7 +49,7 @@ describe("Tag", () => {
             it("should return a 204", async () => {
                 jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/tags/like/Test`)
+                    await supertest(app).get(`/api/tags`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(204);
