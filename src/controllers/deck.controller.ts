@@ -59,11 +59,7 @@ export class DeckController {
             .populate("tags")
             .exec()
             .then((data: any) => {
-                if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck could not be found");
-                } else {
-                    res.status(StatusCodes.OK).json(data);
-                }
+                res.status(StatusCodes.OK).json(data);
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
