@@ -38,21 +38,17 @@ export class DeckController {
         Deck.findOne({
             _id: sanitize(req.body.id),
             isPublished: true
-        })
-            .then((data: any) => {
-                if (!data) {
-                    res.status(StatusCodes.NOT_FOUND).json("The specified deck was not found");
-                } else {
-                    next();
-                }
-            });
+        }).then((data: any) => {
+            if (!data) {
+                res.status(StatusCodes.NOT_FOUND).json("The specified deck was not found");
+            } else {
+                next();
+            }
+        });
     }
 
     async updateDeck(req: any, res: any) {
-        Deck.findOneAndUpdate({
-            _id: sanitize(req.params.id),
-            isPublished: false
-        }, {
+        Deck.findByIdAndUpdate(sanitize(req.params.id), {
             title: sanitize(req.body.title),
             description: sanitize(req.body.description),
             image: sanitize(req.body.image),
@@ -63,11 +59,7 @@ export class DeckController {
             .populate("tags")
             .exec()
             .then((data: any) => {
-                if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Deck already published");
-                } else {
-                    res.status(StatusCodes.OK).json(data);
-                }
+                res.status(StatusCodes.OK).json(data);
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
@@ -85,10 +77,25 @@ export class DeckController {
             } else {
                 next();
             }
+        }).catch((e: any) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+            console.log(e);
         })
-            .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
-            })
+    }
+
+    async verifyUnpublished(req: any, res: any, next: any) {
+        Deck.findOne({
+            _id: sanitize(req.params.id),
+            isPublished: false
+        }).then((data: any) => {
+            if (!data) {
+                res.status(StatusCodes.BAD_REQUEST).json("Deck is already published");
+            } else {
+                next();
+            }
+        }).catch((e: any) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+            console.log(e);
+        })
     }
 }

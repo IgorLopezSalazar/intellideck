@@ -17,7 +17,7 @@ const responsePayload = {
 };
 
 describe("Tag", () => {
-    describe("GET Tags by pattern", () => {
+    describe("GET Tags", () => {
         describe("Given Internal Error occurs", () => {
             it("should return a 500", async () => {
                 jest.spyOn(Tag, "find").mockRejectedValueOnce(new Error());
