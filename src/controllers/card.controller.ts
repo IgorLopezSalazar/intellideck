@@ -29,6 +29,9 @@ export class CardController {
             } else {
                 res.status(StatusCodes.OK).json(data);
             }
+        }).catch((e: any) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+            console.log(e);
         });
     }
 
