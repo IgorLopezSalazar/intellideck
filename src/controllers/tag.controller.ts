@@ -34,8 +34,8 @@ export class TagController {
             })
     }
 
-    async getTagsByPattern(req: any, res: any) {
-        Tag.find({name: new RegExp(sanitize(req.params.pattern), 'i')})
+    async getTags(req: any, res: any) {
+        Tag.find({})
             .then((data: any) => {
                 if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();

@@ -82,13 +82,9 @@ export class UserController {
     }
 
     async putFollowUser(req: any, res: any, next: any) {
-        User.findOneAndUpdate({
-                _id: req.decoded._id,
-                "followedUsers": {$nin: [sanitize(req.body.id)]}
-            },
-            {"$push": {"followedUsers": sanitize(req.body.id)}},
-            {returnOriginal: false})
+       this.genericFollow(req,"followedUsers")
             .then((loggedUser: any) => {
+                console.log(loggedUser)
                 req.followUnfollowData = loggedUser;
                 next();
             })
@@ -98,13 +94,26 @@ export class UserController {
             });
     }
 
-    async putUnfollowUser(req: any, res: any, next: any) {
-        User.findOneAndUpdate({
+    async genericFollow(req: any, collection: string) {
+        return User.findOneAndUpdate({
                 _id: req.decoded._id,
-                "followedUsers": {$in: [sanitize(req.body.id)]}
+                [collection]: {$nin: [sanitize(req.body.id)]}
             },
-            {"$pull": {"followedUsers": sanitize(req.body.id)}},
-            {returnOriginal: false})
+            {"$push": {[collection]: sanitize(req.body.id)}},
+            {returnOriginal: false});
+    }
+
+    async genericUnfollow(req: any, collection: string) {
+        return User.findOneAndUpdate({
+                _id: req.decoded._id,
+                [collection]: {$in: [sanitize(req.body.id)]}
+            },
+            {"$pull": {[collection]: sanitize(req.body.id)}},
+            {returnOriginal: false});
+    }
+
+    async putUnfollowUser(req: any, res: any, next: any) {
+        this.genericUnfollow(req, "followedUsers")
             .then((loggedUser: any) => {
                 req.followUnfollowData = loggedUser;
                 next();
@@ -127,12 +136,7 @@ export class UserController {
     }
 
     async putFollowDeck(req: any, res: any, next: any) {
-        User.findOneAndUpdate({
-                _id: req.decoded._id,
-                "followedDecks": {$nin: [sanitize(req.body.id)]}
-            },
-            {"$push": {"followedDecks": sanitize(req.body.id)}},
-            {returnOriginal: false})
+        this.genericFollow(req,"followedDecks")
             .then((loggedUser: any) => {
                 req.followUnfollowData = loggedUser;
                 next();
@@ -144,12 +148,7 @@ export class UserController {
     }
 
     async putUnfollowDeck(req: any, res: any, next: any) {
-        User.findOneAndUpdate({
-                _id: req.decoded._id,
-                "followedDecks": {$in: [sanitize(req.body.id)]}
-            },
-            {"$pull": {"followedDecks": sanitize(req.body.id)}},
-            {returnOriginal: false})
+        this.genericUnfollow(req, "followedDecks")
             .then((loggedUser: any) => {
                 req.followUnfollowData = loggedUser;
                 next();
@@ -182,10 +181,11 @@ export class UserController {
 
     async updateUser(req: any, res: any) {
         User.findByIdAndUpdate(req.decoded._id,
-            {name: sanitize(req.body.name),
-                    username: sanitize(req.body.username),
-                    email: sanitize(req.body.email),
-                    profilePicture: sanitize(req.body.profilePicture)
+            {
+                name: sanitize(req.body.name),
+                username: sanitize(req.body.username),
+                email: sanitize(req.body.email),
+                profilePicture: sanitize(req.body.profilePicture)
             },
             {returnOriginal: false})
             .then((data: any) =>

@@ -14,10 +14,10 @@ router.get('/tags/:name',(req: any, res: any, next: any) => {
     return tagController.postTag(req, res);
 })
 
-router.get('/tags/like/:pattern',(req: any, res: any, next: any) => {
+router.get('/tags',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
-    return tagController.getTagsByPattern(req, res);
+    return tagController.getTags(req, res);
 })
 
 export{ router };
