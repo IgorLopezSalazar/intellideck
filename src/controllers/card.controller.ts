@@ -40,10 +40,10 @@ export class CardController {
             question: sanitize(req.body.question),
             answer: sanitize(req.body.answer),
             image: sanitize(req.body.image)
-        }, {returnOriginal: false})
+        }, {returnOriginal: false, runValidators: true})
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Card could not updated");
+                    res.status(StatusCodes.BAD_REQUEST).json("Card could not be updated");
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }

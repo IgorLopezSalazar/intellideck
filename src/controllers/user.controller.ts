@@ -99,7 +99,7 @@ export class UserController {
                 [collection]: {$nin: [sanitize(req.body.id)]}
             },
             {"$push": {[collection]: sanitize(req.body.id)}},
-            {returnOriginal: false});
+            {returnOriginal: false, runValidators: true});
     }
 
     async genericUnfollow(req: any, collection: string) {
@@ -108,7 +108,7 @@ export class UserController {
                 [collection]: {$in: [sanitize(req.body.id)]}
             },
             {"$pull": {[collection]: sanitize(req.body.id)}},
-            {returnOriginal: false});
+            {returnOriginal: false, runValidators: true});
     }
 
     async putUnfollowUser(req: any, res: any, next: any) {
@@ -186,7 +186,7 @@ export class UserController {
                 email: sanitize(req.body.email),
                 profilePicture: sanitize(req.body.profilePicture)
             },
-            {returnOriginal: false})
+            {returnOriginal: false, runValidators: true})
             .then((data: any) =>
                 res.status(StatusCodes.OK).json(data))
             .catch((e: any) => {

@@ -60,7 +60,7 @@ export class TopicController {
         Topic.findByIdAndUpdate(sanitize(req.params.id), {
                 name: sanitize(req.body.name)
             },
-            {returnOriginal: false})
+            {returnOriginal: false, runValidators: true})
             .then((data: any) => {
                 if(!data) {
                     res.status(StatusCodes.NOT_FOUND).json("Topic not found");
