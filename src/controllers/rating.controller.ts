@@ -1,33 +1,32 @@
 import sanitize from 'mongo-sanitize';
 
-import {Card} from "../models/card.ts";
+import {Rating} from "../models/rating.ts";
 import {StatusCodes} from 'http-status-codes';
 
-export class CardController {
-    async postCard(req: any, res: any) {
-        let card = new Card({
-            question: sanitize(req.body.question),
-            answer: sanitize(req.body.answer),
-            image: sanitize(req.body.image),
+export class RatingController {
+    async postRating(req: any, res: any) {
+        let rating = new Rating({
+            rate: sanitize(req.body.rate),
+            user: sanitize(req.decoded._id),
             deck: sanitize(req.params.id)
         })
-        Card.create(card)
+        Rating.create(rating)
             .then((data: any) =>
                 res.status(StatusCodes.CREATED).json(data))
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The card could not be created");
+                res.status(StatusCodes.BAD_REQUEST).json("The rating could not be created");
                 console.log(e);
             })
     }
 
-    async getCardsOfDeck(req: any, res: any) {
-        Card.find({
+    async getAvgRatingOfDeck(req: any, res: any) {
+        Rating.find({
             deck: sanitize(req.params.id)
         }).then((data: any[]) => {
             if (data.length == 0) {
-                res.status(StatusCodes.NO_CONTENT).json();
+                res.status(StatusCodes.OK).json(0);
             } else {
-                res.status(StatusCodes.OK).json(data);
+                res.status(StatusCodes.OK).json(this.calculateAvgRating(data));
             }
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
@@ -35,15 +34,25 @@ export class CardController {
         });
     }
 
-    async putCard(req: any, res: any) {
-        Card.findByIdAndUpdate(sanitize(req.params.cardId), {
-            question: sanitize(req.body.question),
-            answer: sanitize(req.body.answer),
-            image: sanitize(req.body.image)
-        }, {returnOriginal: false, runValidators: true})
+    calculateAvgRating(data: any) {
+        let avg: number = 0;
+        data.forEach((rating: any) => avg = avg + rating.rate);
+        return Math.round(avg / data.length);
+    }
+
+    async putRating(req: any, res: any) {
+        Rating.findOneAndUpdate({
+            user: sanitize(req.decoded._id),
+            deck: sanitize(req.params.id)
+        }, {
+            rate: sanitize(req.body.rate)
+        }, {
+            returnOriginal: false,
+            runValidators: true
+        })
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Card could not be updated");
+                    res.status(StatusCodes.BAD_REQUEST).json("Rating could not be updated");
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
@@ -54,8 +63,11 @@ export class CardController {
             })
     }
 
-    async deleteCard(req: any, res: any) {
-        Card.findByIdAndDelete(sanitize(req.params.cardId))
+    async deleteRating(req: any, res: any) {
+        Rating.findOneAndDelete({
+            user: sanitize(req.decoded._id),
+            deck: sanitize(req.params.id)
+        })
             .then((data: any) =>
                 res.status(StatusCodes.NO_CONTENT).json())
             .catch((e: any) => {

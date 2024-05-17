@@ -34,9 +34,12 @@ export class DeckController {
         });
     }
 
-    async findById(req: any, res: any, next: any) {
+    async verifyPublished(req: any, res: any, next: any) {
         Deck.findOne({
-            _id: sanitize(req.body.id),
+            $or: [
+                { _id: sanitize(req.body.id) },
+                { _id: sanitize(req.params.id) }
+            ],
             isPublished: true
         }).then((data: any) => {
             if (!data) {
@@ -54,7 +57,7 @@ export class DeckController {
             image: sanitize(req.body.image),
             topic: sanitize(req.body.topic),
             tags: sanitize(req.body.tags)
-        }, {returnOriginal: false})
+        }, {returnOriginal: false, runValidators: true})
             .populate("topic")
             .populate("tags")
             .exec()
