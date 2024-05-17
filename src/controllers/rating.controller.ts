@@ -24,9 +24,9 @@ export class RatingController {
             deck: sanitize(req.params.id)
         }).then((data: any[]) => {
             if (data.length == 0) {
-                res.status(StatusCodes.OK).json(0);
+                res.status(StatusCodes.OK).json({rate: 0});
             } else {
-                res.status(StatusCodes.OK).json(this.calculateAvgRating(data));
+                res.status(StatusCodes.OK).json({rate: this.calculateAvgRating(data)});
             }
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
@@ -58,7 +58,7 @@ export class RatingController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+                res.status(StatusCodes.BAD_REQUEST).json("The rating could not be created");
                 console.log(e);
             })
     }

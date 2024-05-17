@@ -43,7 +43,7 @@ export class DeckController {
             isPublished: true
         }).then((data: any) => {
             if (!data) {
-                res.status(StatusCodes.NOT_FOUND).json("The specified deck was not found");
+                res.status(StatusCodes.BAD_REQUEST).json("The specified deck is not published");
             } else {
                 next();
             }

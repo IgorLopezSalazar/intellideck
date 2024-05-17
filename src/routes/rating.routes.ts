@@ -18,6 +18,8 @@ router.post('/decks/:id/ratings',(req: any, res: any, next: any) => {
 
 router.get('/decks/:id/ratings',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyPublished(req, res, next);
 }, (req: any, res: any) => {
     return ratingController.getAvgRatingOfDeck(req, res);
 })

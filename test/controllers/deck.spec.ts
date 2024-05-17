@@ -317,13 +317,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to follow does not exists", () => {
-                it("should return a 404", async () => {
+                it("should return a 400", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(404);
+                                expect(response.status).toEqual(400);
                             });
                     });
                 });
@@ -384,13 +384,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to unfollow does not exists", () => {
-                it("should return a 404", async () => {
+                it("should return a 400", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(404);
+                                expect(response.status).toEqual(400);
                             });
                     });
                 });
