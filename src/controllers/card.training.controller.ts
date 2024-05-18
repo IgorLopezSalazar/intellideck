@@ -16,6 +16,7 @@ export class CardTrainingController {
             console.log(e);
         });
     }
+
     async postCardTraining(req: any, card: any) {
         let isShown: boolean;
         let i = (!req.body.cards) ? -1 : req.body.cards.findIndex((bodyCard: any) => bodyCard.id == card._id);
@@ -35,27 +36,25 @@ export class CardTrainingController {
 
     async postCardTrainings(req: any, res: any) {
         let allPromises = req.cards.map((card: any) => {
-            return this.postCardTraining(req, card)
-                .catch((e: any) => {
-                    res.status(StatusCodes.BAD_REQUEST).json("A card training could not be created");
-                    console.log(e);
-                });
+            return this.postCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.CREATED).json(data);
+        }).catch((e: any) => {
+            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be created");
+            console.log(e);
         });
     }
 
     async deleteCardTrainings(req: any, res: any) {
         let allPromises = req.cards.map((card: any) => {
-            return this.deleteCardTraining(req, card)
-                .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-                    console.log(e);
-                });
+            return this.deleteCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.NO_CONTENT).json();
+        }).catch((e: any) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
+            console.log(e);
         });
     }
 
@@ -68,31 +67,29 @@ export class CardTrainingController {
 
     async putCardTrainings(req: any, res: any) {
         let allPromises = req.cards.map((card: any) => {
-            return this.putCardTraining(req, res, card)
-                .catch((e: any) => {
-                    res.status(StatusCodes.BAD_REQUEST).json("A card training could not be updated");
-                    console.log(e);
-                });
+            return this.putCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.OK).json(data);
+        }).catch((e: any) => {
+            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be updated");
+            console.log(e);
         });
     }
 
-    async putCardTraining(req: any, res: any, card: any) {
-        let putCard: any =  req.body.cards.find((bodyCard: any) => bodyCard.id == card.card);
-        if(putCard.box > req.boxAmount) {
-            res.status(StatusCodes.BAD_REQUEST).json("Is not possible to put the card in the specified box");
-        } else {
-            return CardTraining.findOneAndUpdate({
-                    deckTraining: req.deckTraining,
-                    card: card.card
-                }, {
-                    box: sanitize(putCard.box),
-                    nextTraining: this.calculateNextSession(sanitize(putCard.box))
-                },
-                {returnOriginal: false, runValidators: true, omitUndefined: true});
+    async putCardTraining(req: any, card: any) {
+        let putCard: any = req.body.cards.find((bodyCard: any) => bodyCard.id == card.card);
+        if (putCard.box > req.boxAmount) {
+            putCard.box = -1;
         }
+        return CardTraining.findOneAndUpdate({
+                deckTraining: req.deckTraining,
+                card: card.card
+            }, {
+                box: sanitize(putCard.box),
+                nextTraining: this.calculateNextSession(sanitize(putCard.box))
+            },
+            {returnOriginal: false, runValidators: true, omitUndefined: true});
     }
 
     async showHideCardTraining(req: any, res: any, isShown: any) {
@@ -124,6 +121,6 @@ export class CardTrainingController {
         for (i = 2; i < position; i++) {
             fib[i] = fib[i - 2] + fib[i - 1];
         }
-        return (position == 1)? 1 : fib.at(-1);
+        return (position == 1) ? 1 : fib.at(-1);
     }
 }
