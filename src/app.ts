@@ -5,6 +5,7 @@ import {router as TopicRouter} from "./routes/topic.routes.ts";
 import {router as TagRouter} from "./routes/tag.routes.ts";
 import {router as CardRouter} from "./routes/card.routes.ts";
 import {router as RatingRouter} from "./routes/rating.routes.ts";
+import {router as DeckTrainingRouter} from "./routes/deck.training.routes.ts";
 
 export const app = express();
 app.use(express.json());
@@ -16,3 +17,4 @@ app.use('/api', TopicRouter);
 app.use('/api', TagRouter);
 app.use('/api', CardRouter);
 app.use('/api', RatingRouter);
+app.use('/api', DeckTrainingRouter);

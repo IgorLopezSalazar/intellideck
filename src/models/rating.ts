@@ -10,7 +10,7 @@ export interface IRating {
 }
 
 export const ratingSchema = new Schema<IRating>({
-    rate: { type: Schema.Types.Number, required: true, min: 0, max: 10, validate : {
+    rate: { type: Schema.Types.Number, required: true, min: 1, max: 10, validate : {
             validator : Number.isInteger,
             message   : '{VALUE} is not an integer value'
         } },
