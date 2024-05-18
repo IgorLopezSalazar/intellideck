@@ -21,7 +21,7 @@ export const deckTrainingSchema = new Schema<IDeckTraining>({
             message: '{VALUE} is not an integer value'
         }
     },
-    backtrack: {type: Schema.Types.String, enum: ['BACKTRACK_PRIOR', 'BACKTRACK_FIRST'], default: 'USER', required: true},
+    backtrack: {type: Schema.Types.String, enum: ['BACKTRACK_PRIOR', 'BACKTRACK_FIRST'], default: 'BACKTRACK_FIRST', required: true},
     user: {type: Schema.Types.ObjectId, ref: 'user'},
     deck: {type: Schema.Types.ObjectId, ref: 'deck'}
 });
