@@ -10,7 +10,7 @@ const deckController = new DeckController();
 const deckTrainingController = new DeckTrainingController();
 const middleware: Middleware = new Middleware();
 
-router.put('/decks/:id/deckTraining/card/:cardId/show',(req: any, res: any, next: any) => {
+router.put('/decks/:id/deckTraining/cards/:cardId/show',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
@@ -20,7 +20,7 @@ router.put('/decks/:id/deckTraining/card/:cardId/show',(req: any, res: any, next
     return cardTrainingController.showHideCardTraining(req, res, true);
 })
 
-router.put('/decks/:id/deckTraining/card/:cardId/hide',(req: any, res: any, next: any) => {
+router.put('/decks/:id/deckTraining/cards/:cardId/hide',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
@@ -28,6 +28,28 @@ router.put('/decks/:id/deckTraining/card/:cardId/hide',(req: any, res: any, next
     return deckTrainingController.getDeckTraining(req, res, next);
 }, (req: any, res: any) => {
     return cardTrainingController.showHideCardTraining(req, res, false);
+})
+
+router.get('/decks/:id/deckTraining/cards',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckTrainingController.getDeckTraining(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.getCardTrainingsOfDeckTraining(req, res, next);
+}, (req: any, res: any) => {
+    return cardTrainingController.verifyCardTrainings(req, res);
+})
+
+router.get('/decks/:id/deckTraining/cards/today',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckTrainingController.getDeckTraining(req, res, next);
+}, (req: any, res: any) => {
+    return cardTrainingController.getCardTrainingsForToday(req, res);
 })
 
 export{ router };

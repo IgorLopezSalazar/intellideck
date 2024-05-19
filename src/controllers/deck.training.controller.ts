@@ -9,11 +9,15 @@ export class DeckTrainingController {
             boxAmount: sanitize(req.body.boxAmount),
             backtrack: sanitize(req.body.backtrack),
             user: req.decoded._id,
-            deck: req.params.id
+            deck: req.params.id,
+            statistics: {
+                attempts: 0,
+                avgCompletionTimeSeconds: 0
+            }
         })
         DeckTraining.create(deckTraining)
             .then((data: any) => {
-                req.deckTraining = data._id;
+                req.deckTraining = data;
                 next();
             })
             .catch((e: any) => {
@@ -28,7 +32,7 @@ export class DeckTrainingController {
             deck: req.params.id
         })
             .then((data: any) => {
-                req.deckTraining = data._id;
+                req.deckTraining = data;
                 next();
             })
             .catch((e: any) => {
@@ -42,12 +46,20 @@ export class DeckTrainingController {
             deck: req.params.id
         })
             .then((data: any) => {
-                req.deckTraining = data._id;
+                req.deckTraining = data;
                 next();
             })
             .catch((e: any) => {
                 res.status(StatusCodes.NO_CONTENT).json();
             })
+    }
+
+    async validateDeckTraining(req: any, res: any) {
+        if (!req.deckTraining) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        } else {
+            res.status(StatusCodes.OK).json(req.deckTraining);
+        }
     }
 
     async putDeckTraining(req: any, res: any, next: any) {
@@ -65,11 +77,10 @@ export class DeckTrainingController {
                 if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json("Deck training not found");
                 } else {
-                    if(!req.body.cards) {
+                    if (!req.body.cards) {
                         res.status(StatusCodes.OK).json();
                     } else {
-                        req.deckTraining = data._id;
-                        req.boxAmount = data.boxAmount;
+                        req.deckTraining = data;
                         next();
                     }
                 }
@@ -78,5 +89,35 @@ export class DeckTrainingController {
                 res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be updated");
                 console.log(e);
             })
+    }
+
+    async putStatisticsAverageTime(req: any, res: any, next: any) {
+        if(!req.body.completionTimeSeconds) {
+            res.status(StatusCodes.BAD_REQUEST).json("Time taken to study the deck missing");
+        } else {
+            const avgCompletionTimeSeconds = Math.round(((req.deckTraining.statistics.avgCompletionTimeSeconds *
+                    (req.deckTraining.statistics.attempts))
+                + req.body.completionTimeSeconds) / (req.deckTraining.statistics.attempts + 1));
+            DeckTraining.findOneAndUpdate({
+                    user: req.decoded._id,
+                    deck: req.params.id
+                }, {
+                    "$set": {"statistics.avgCompletionTimeSeconds": avgCompletionTimeSeconds},
+                    $inc: {"statistics.attempts": 1}
+                },
+                {returnOriginal: false, runValidators: true, omitUndefined: true})
+                .then((data: any) => {
+                    if (!data) {
+                        res.status(StatusCodes.BAD_REQUEST).json("Deck training could not be updated");
+                    } else {
+                        req.deckTraining = data;
+                        next();
+                    }
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be updated");
+                    console.log(e);
+                })
+        }
     }
 }

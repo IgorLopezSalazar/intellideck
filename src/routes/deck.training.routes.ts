@@ -31,6 +31,8 @@ router.put('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
 }, (req: any, res: any, next: any) => {
     return deckTrainingController.putDeckTraining(req, res, next);
 }, (req: any, res: any, next: any) => {
+    return deckTrainingController.putStatisticsAverageTime(req, res, next);
+}, (req: any, res: any, next: any) => {
     return cardTrainingController.getCardTrainingsOfDeckTraining(req, res, next);
 }, (req: any, res: any) => {
     return cardTrainingController.putCardTrainings(req, res);
@@ -43,9 +45,19 @@ router.delete('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
 }, (req: any, res: any, next: any) => {
     return deckTrainingController.deleteDeckTraining(req, res, next);
 }, (req: any, res: any, next: any) => {
-    return cardTrainingController.getCardTrainingsOfDeckTraining(req, res, next);
+    return cardController.getCardsOfDeck(req, res, next);
 }, (req: any, res: any) => {
     return cardTrainingController.deleteCardTrainings(req, res);
+})
+
+router.get('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckTrainingController.getDeckTraining(req, res, next);
+}, (req: any, res: any) => {
+    return deckTrainingController.validateDeckTraining(req, res);
 })
 
 export{ router };

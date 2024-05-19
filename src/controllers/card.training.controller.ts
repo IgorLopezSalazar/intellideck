@@ -7,14 +7,44 @@ export class CardTrainingController {
 
     async getCardTrainingsOfDeckTraining(req: any, res: any, next: any) {
         CardTraining.find({
-            deckTraining: req.deckTraining
-        }).then((data: any[]) => {
+            deckTraining: req.deckTraining._id,
+            isShown: true
+        }).then((data: any) => {
             req.cards = data;
             next();
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
             console.log(e);
         });
+    }
+
+    async getCardTrainingsForToday(req: any, res: any) {
+        let today = new Date();
+        let day = (today.getDate() < 10)? "0" + today.getDate() : today.getDate();
+        let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth();
+        let lowerDate = new Date(today.getFullYear() + "-" + month + "-" + day);
+        CardTraining.find({
+            deckTraining: req.deckTraining._id,
+            nextTraining: { "$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1) },
+            isShown: true
+        }).then((data: any) => {
+            if (data.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(data);
+            }
+        }).catch((e: any) => {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+            console.log(e);
+        });
+    }
+
+    async verifyCardTrainings(req: any, res: any) {
+        if (req.cards.length == 0) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        } else {
+            res.status(StatusCodes.OK).json(req.cards);
+        }
     }
 
     async postCardTraining(req: any, card: any) {
@@ -24,7 +54,7 @@ export class CardTrainingController {
             isShown = req.body.cards[i].isShown;
         } else isShown = true;
         let cardTraining = new CardTraining({
-            deckTraining: req.deckTraining,
+            deckTraining: req.deckTraining._id,
             card: card._id,
             nextTraining: new Date(),
             isShown: sanitize(isShown),
@@ -39,7 +69,7 @@ export class CardTrainingController {
             return this.postCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
-            res.status(StatusCodes.CREATED).json(data);
+            res.status(StatusCodes.CREATED).json(req.deckTraining);
         }).catch((e: any) => {
             res.status(StatusCodes.BAD_REQUEST).json("A card training could not be created");
             console.log(e);
@@ -60,8 +90,8 @@ export class CardTrainingController {
 
     async deleteCardTraining(req: any, card: any) {
         return CardTraining.findOneAndDelete({
-            deckTraining: req.deckTraining,
-            card: card.card
+            deckTraining: req.deckTraining._id,
+            card: card._id
         });
     }
 
@@ -70,7 +100,7 @@ export class CardTrainingController {
             return this.putCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
-            res.status(StatusCodes.OK).json(data);
+            res.status(StatusCodes.OK).json(req.deckTraining);
         }).catch((e: any) => {
             res.status(StatusCodes.BAD_REQUEST).json("A card training could not be updated");
             console.log(e);
@@ -79,11 +109,11 @@ export class CardTrainingController {
 
     async putCardTraining(req: any, card: any) {
         let putCard: any = req.body.cards.find((bodyCard: any) => bodyCard.id == card.card);
-        if (putCard.box > req.boxAmount) {
+        if (putCard.box > req.deckTraining.boxAmount) {
             putCard.box = -1;
         }
         return CardTraining.findOneAndUpdate({
-                deckTraining: req.deckTraining,
+                deckTraining: req.deckTraining._id,
                 card: card.card
             }, {
                 box: sanitize(putCard.box),
@@ -94,7 +124,7 @@ export class CardTrainingController {
 
     async showHideCardTraining(req: any, res: any, isShown: any) {
         CardTraining.findOneAndUpdate({
-                deckTraining: req.deckTraining,
+                deckTraining: req.deckTraining._id,
                 card: req.params.cardId
             }, {
                 isShown: isShown
