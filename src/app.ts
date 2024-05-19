@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import {router as UserRouter} from "./routes/user.routes.ts";
 import {router as DeckRouter} from "./routes/deck.routes.ts";
 import {router as TopicRouter} from "./routes/topic.routes.ts";
@@ -8,6 +9,7 @@ import {router as RatingRouter} from "./routes/rating.routes.ts";
 
 export const app = express();
 app.use(express.json());
+app.use(cors());
 app.disable("x-powered-by");
 app.use(express.urlencoded({extended: false}));
 app.use('/api', UserRouter);
