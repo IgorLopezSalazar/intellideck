@@ -8,7 +8,7 @@ import {router as RatingRouter} from "./routes/rating.routes.ts";
 import {router as DeckTrainingRouter} from "./routes/deck.training.routes.ts";
 import {router as CardTrainingRouter} from "./routes/card.training.routes.ts";
 
-export const app = express();
+const app = express();
 app.use(express.json());
 app.disable("x-powered-by");
 app.use(express.urlencoded({extended: false}));
@@ -20,3 +20,5 @@ app.use('/api', CardRouter);
 app.use('/api', RatingRouter);
 app.use('/api', DeckTrainingRouter);
 app.use('/api', CardTrainingRouter);
+
+export{ app };

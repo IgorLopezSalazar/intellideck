@@ -50,7 +50,7 @@ export class DeckTrainingController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.NO_CONTENT).json();
+                res.status(StatusCodes.BAD_REQUEST).json("No deck training found");
             })
     }
 

@@ -21,7 +21,7 @@ export class CardTrainingController {
     async getCardTrainingsForToday(req: any, res: any) {
         let today = new Date();
         let day = (today.getDate() < 10)? "0" + today.getDate() : today.getDate();
-        let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth();
+        let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth() + 1;
         let lowerDate = new Date(today.getFullYear() + "-" + month + "-" + day);
         CardTraining.find({
             deckTraining: req.deckTraining._id,
@@ -131,10 +131,14 @@ export class CardTrainingController {
             },
             {returnOriginal: false, runValidators: true, omitUndefined: true})
             .then((data: any) => {
-                res.status(StatusCodes.OK).json(data);
+                if(!data) {
+                    res.status(StatusCodes.BAD_REQUEST).json("No card training for specified card");
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be created");
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
                 console.log(e);
             })
     }
