@@ -78,7 +78,7 @@ export class DeckTrainingController {
                     res.status(StatusCodes.NOT_FOUND).json("Deck training not found");
                 } else {
                     if (!req.body.cards) {
-                        res.status(StatusCodes.OK).json();
+                        res.status(StatusCodes.OK).json(data);
                     } else {
                         req.deckTraining = data;
                         next();
@@ -92,8 +92,8 @@ export class DeckTrainingController {
     }
 
     async putStatisticsAverageTime(req: any, res: any, next: any) {
-        if(!req.body.completionTimeSeconds) {
-            res.status(StatusCodes.BAD_REQUEST).json("Time taken to study the deck missing");
+        if(!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0) {
+            res.status(StatusCodes.BAD_REQUEST).json("Missing or invalid completion time of attempt");
         } else {
             const avgCompletionTimeSeconds = Math.round(((req.deckTraining.statistics.avgCompletionTimeSeconds *
                     (req.deckTraining.statistics.attempts))
@@ -107,12 +107,8 @@ export class DeckTrainingController {
                 },
                 {returnOriginal: false, runValidators: true, omitUndefined: true})
                 .then((data: any) => {
-                    if (!data) {
-                        res.status(StatusCodes.BAD_REQUEST).json("Deck training could not be updated");
-                    } else {
-                        req.deckTraining = data;
-                        next();
-                    }
+                    req.deckTraining = data;
+                    next();
                 })
                 .catch((e: any) => {
                     res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be updated");
