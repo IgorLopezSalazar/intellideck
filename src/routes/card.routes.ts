@@ -20,8 +20,10 @@ router.post('/decks/:id/cards',(req: any, res: any, next: any) => {
 
 router.get('/decks/:id/cards',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardController.getCardsOfDeck(req, res, next);
 }, (req: any, res: any) => {
-    return cardController.getCardsOfDeck(req, res);
+    return cardController.validateCardsOfDeck(req, res);
 })
 
 router.put('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {

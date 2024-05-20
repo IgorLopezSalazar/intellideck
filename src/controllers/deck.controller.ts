@@ -47,6 +47,9 @@ export class DeckController {
             } else {
                 next();
             }
+        }).catch((e: any) => {
+            res.status(StatusCodes.NOT_FOUND).json("The deck could not be found");
+            console.log(e);
         });
     }
 

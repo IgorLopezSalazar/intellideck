@@ -20,19 +20,24 @@ export class CardController {
             })
     }
 
-    async getCardsOfDeck(req: any, res: any) {
+    async getCardsOfDeck(req: any, res: any, next: any) {
         Card.find({
             deck: sanitize(req.params.id)
-        }).then((data: any[]) => {
-            if (data.length == 0) {
-                res.status(StatusCodes.NO_CONTENT).json();
-            } else {
-                res.status(StatusCodes.OK).json(data);
-            }
+        }).then((data: any) => {
+            req.cards = data;
+            next();
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
             console.log(e);
         });
+    }
+
+    async validateCardsOfDeck(req: any, res: any) {
+        if (req.cards.length == 0) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        } else {
+            res.status(StatusCodes.OK).json(req.cards);
+        }
     }
 
     async putCard(req: any, res: any) {
