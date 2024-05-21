@@ -25,21 +25,25 @@ export class UserController {
     }
 
     async postUser(req: any, res: any) {
-        let user = new User({
-            name: sanitize(req.body.name),
-            username: sanitize(req.body.username),
-            email: sanitize(req.body.email),
-            password: hashSync(req.body.password, SALT_ROUNDS),
-            profilePicture: sanitize(req.body.profilePicture),
-            role: sanitize(req.body.role)
-        })
-        User.create(user)
-            .then((data: any) =>
-                res.status(StatusCodes.CREATED).json(data))
-            .catch((e: any) => {
-                res.status(StatusCodes.CONFLICT).json("A user with the same email or username already exists");
-                console.log(e);
+        if (!req.body.password) {
+            res.status(StatusCodes.BAD_REQUEST).json("Password missing");
+        } else {
+            let user = new User({
+                name: sanitize(req.body.name),
+                username: sanitize(req.body.username),
+                email: sanitize(req.body.email),
+                password: hashSync(req.body.password, SALT_ROUNDS),
+                profilePicture: sanitize(req.body.profilePicture),
+                role: sanitize(req.body.role)
             })
+            User.create(user)
+                .then((data: any) =>
+                    res.status(StatusCodes.CREATED).json(data))
+                .catch((e: any) => {
+                    res.status(StatusCodes.CONFLICT).json("A user with the same email or username already exists");
+                    console.log(e);
+                })
+        }
     }
 
     async getUser(req: any, res: any) {
