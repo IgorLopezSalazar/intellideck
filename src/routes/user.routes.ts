@@ -3,55 +3,57 @@ import {UserController} from "../controllers/user.controller.ts";
 import {Middleware} from "../middleware.ts";
 
 const router = express.Router();
-const controller = new UserController();
+const userController = new UserController();
 const middleware: Middleware = new Middleware();
 
 router.get('/users/followed/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
-    return controller.getFollowedUsers(req, res);
+    return userController.getFollowedUsers(req, res);
 })
 
 router.get('/users/followers/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
-    return controller.getFollowers(req, res);
+    return userController.getFollowers(req, res);
 })
 
 router.put('/users/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
-    return controller.putFollowUser(req, res, next);
+    return userController.putFollowUser(req, res, next);
 }, (req: any, res: any) => {
-    return controller.validateFollowUnfollow(req, res);
+    return userController.validateFollowUnfollow(req, res);
 })
 
 router.put('/users/unfollow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next:any) => {
-    return controller.putUnfollowUser(req, res, next);
+    return userController.putUnfollowUser(req, res, next);
 }, (req: any, res: any) => {
-    return controller.validateFollowUnfollow(req, res);
+    return userController.validateFollowUnfollow(req, res);
 })
 
 router.post('/users', (req: any, res: any) => {
-    return controller.postUser(req, res);
+    return userController.postUser(req, res);
 })
 
 router.put('/users', (req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.verifyNewPassword(req, res, next);
 }, (req: any, res: any) => {
-    return controller.updateUser(req, res);
+    return userController.updateUser(req, res);
 })
 
 router.get('/users/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
-    return controller.getUser(req, res);
+    return userController.getUser(req, res);
 })
 
 router.post('/login', (req: any, res: any) => {
-    return controller.login(req, res);
+    return userController.login(req, res);
 })
 
 export{ router };

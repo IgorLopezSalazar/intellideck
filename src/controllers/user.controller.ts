@@ -85,7 +85,7 @@ export class UserController {
     }
 
     async putFollowUser(req: any, res: any, next: any) {
-       this.genericFollow(req,"followedUsers")
+        this.genericFollow(req, "followedUsers")
             .then((loggedUser: any) => {
                 console.log(loggedUser)
                 req.followUnfollowData = loggedUser;
@@ -139,7 +139,7 @@ export class UserController {
     }
 
     async putFollowDeck(req: any, res: any, next: any) {
-        this.genericFollow(req,"followedDecks")
+        this.genericFollow(req, "followedDecks")
             .then((loggedUser: any) => {
                 req.followUnfollowData = loggedUser;
                 next();
@@ -197,5 +197,29 @@ export class UserController {
                 res.status(StatusCodes.CONFLICT).json("Email or username already in use");
                 console.log(e);
             })
+    }
+
+    async verifyNewPassword(req: any, res: any, next: any) {
+        if (!req.body.passwords) {
+            next();
+        } else if (!req.body.passwords.old || !req.body.passwords.new) {
+            res.status(StatusCodes.BAD_REQUEST).json("Old or new password missing");
+        } else {
+            User.findById(req.decoded._id)
+                .then((user: any) => {
+                    compare(req.body.passwords.old, user.password).then((match: boolean) => {
+                        if (!match) {
+                            res.status(StatusCodes.BAD_REQUEST).json("Incorrect password");
+                        } else {
+                            User.findByIdAndUpdate(req.decoded._id,
+                                {password: hashSync(req.body.passwords.new, SALT_ROUNDS)}).then(next());
+                        }
+                    });
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while processing the login. Please try again later");
+                    console.log(e);
+                });
+        }
     }
 }

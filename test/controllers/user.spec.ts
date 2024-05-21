@@ -207,28 +207,84 @@ describe("User", () => {
 
     describe("PUT User Method", () => {
         describe("Given user data is valid", () => {
-            it("should return a 200 and the updated object", async () => {
-                jest.spyOn(User, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload);
-                await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/users/`).send({username: creationPayload.username})
-                        .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
-                        .then(response => {
-                            expect(response.status).toEqual(200);
-                            expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
-                        });
+            describe("Given password is not to be updated", () => {
+                it("should return a 200 and the updated object", async () => {
+                    jest.spyOn(User, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload);
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({username: creationPayload.username})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
+                            });
+                    });
+                });
+            });
+
+            describe("Given password is to be updated", () => {
+                it("should return a 200 and the updated object", async () => {
+                    jest.spyOn(User, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload)
+                        .mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(User, "findById").mockResolvedValueOnce(responsePayload);
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({passwords: {new: "123456789", old: "12345678"}})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
+                            });
+                    });
                 });
             });
         });
+        describe("Given user data is not valid", () => {
+            describe("Given user data is duplicated", () => {
+                it("should return a 409", async () => {
+                    jest.spyOn(User, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({username: creationPayload.username})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(409);
+                            });
+                    });
+                });
+            });
 
-        describe("Given user data is duplicated", () => {
-            it("should return a 409", async () => {
-                jest.spyOn(User, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
-                await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/users/`).send({username: creationPayload.username})
-                        .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
-                        .then(response => {
-                            expect(response.status).toEqual(409);
-                        });
+            describe("Given user data is missing old password", () => {
+                it("should return a 400", async () => {
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({passwords: {new: "12345678"}})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(400);
+                            });
+                    });
+                });
+            });
+
+            describe("Given user data is missing new password", () => {
+                it("should return a 400", async () => {
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({passwords: {old: "12345678"}})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(400);
+                            });
+                    });
+                });
+            });
+
+            describe("Given old password is incorrect", () => {
+                it("should return a 400", async () => {
+                    jest.spyOn(User, "findById").mockResolvedValueOnce(responsePayload);
+                    await middleware.generateToken(responsePayload._id, responsePayload.role).then(async (token: any) => {
+                        await supertest(app).put(`/api/users/`).send({passwords: {old: "not correct", new: "12334444334"}})
+                            .set({"Authorization": token, Accept: 'application/json', 'Content-type': 'application/json'})
+                            .then(response => {
+                                expect(response.status).toEqual(400);
+                            });
+                    });
                 });
             });
         });
