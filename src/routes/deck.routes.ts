@@ -4,12 +4,14 @@ import {DeckController} from "../controllers/deck.controller.ts";
 import {UserController} from "../controllers/user.controller.ts";
 import {TagController} from "../controllers/tag.controller.ts";
 import {TopicController} from "../controllers/topic.controller.ts";
+import {CardController} from "../controllers/card.controller.ts";
 
 const router = express.Router();
 const deckController = new DeckController();
 const userController = new UserController();
 const tagController = new TagController();
 const topicController = new TopicController();
+const cardController = new CardController();
 const middleware: Middleware = new Middleware();
 
 router.post('/decks',(req: any, res: any, next: any) => {
@@ -62,6 +64,19 @@ router.put('/decks/:id',(req: any, res: any, next: any) => {
     return tagController.validateTags(req, res, next);
 }, (req: any, res: any) => {
     return deckController.updateDeck(req, res);
+})
+
+
+router.put('/decks/:id/publish',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyUnpublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardController.getCardsOfDeck(req, res, next);
+}, (req: any, res: any) => {
+    return deckController.publishDeck(req, res);
 })
 
 export{ router };

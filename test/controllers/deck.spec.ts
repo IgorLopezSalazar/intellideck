@@ -6,6 +6,7 @@ import {Middleware} from "../../src/middleware.ts";
 import {User} from "../../src/models/user.ts";
 import {Topic} from "../../src/models/topic.ts";
 import {Tag} from "../../src/models/tag.ts";
+import {Card} from "../../src/models/card.ts";
 
 const middleware = new Middleware();
 
@@ -27,6 +28,12 @@ const responsePayload = {
     description: "This is a test deck",
     isPublished: false,
     creator: creatorPayload._id
+};
+const cardPayload = {
+    _id: '6640e53d2da54166918514bd',
+    question: "2 * 3?",
+    answer: "6",
+    deck: responsePayload._id
 };
 
 describe("Deck", () => {
@@ -273,6 +280,52 @@ describe("Deck", () => {
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+    });
+
+    describe("PUT Publish deck", () => {
+        describe("Given Internal error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload).mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Card, "find").mockResolvedValueOnce([cardPayload]);
+                jest.spyOn(Deck, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}/publish`)
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
+
+        describe("Given no cards in deck", () => {
+            it("should return a 400", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload).mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Card, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}/publish`)
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(400);
+                        });
+                });
+            });
+        });
+
+        describe("Given there are cards in deck", () => {
+            it("should return a 200 and the deck", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload).mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Card, "find").mockResolvedValueOnce([cardPayload]);
+                jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).put(`/api/decks/${responsePayload._id}/publish`)
+                        .set({"Authorization": token, 'Content-type': 'application/json'})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
                         });
                 });
             });

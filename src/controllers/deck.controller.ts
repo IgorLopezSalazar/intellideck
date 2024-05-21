@@ -104,4 +104,22 @@ export class DeckController {
             console.log(e);
         })
     }
+
+    async publishDeck(req: any, res: any) {
+        if(req.cards.length == 0) {
+            res.status(StatusCodes.BAD_REQUEST).json("Cannot publish a deck without cards");
+        }
+        else {
+            Deck.findByIdAndUpdate(sanitize(req.params.id), {
+                isPublished: true
+            }, {returnOriginal: false, runValidators: true})
+                .then((data: any) => {
+                    res.status(StatusCodes.OK).json(data);
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
+                    console.log(e);
+                })
+        }
+    }
 }

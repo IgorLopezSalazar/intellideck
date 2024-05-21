@@ -11,12 +11,15 @@ const userPayload = {
     role: "USER"
 }
 const invalidToken = "Bearer none";
-const creationPayload = {
+const partialCreationPayload = {
     name: "Test",
     username: "TestTesty",
     email: "test@test.com",
-    password: "$2a$10$Xu39yMLoJEH/2bEkNRUFseMaICGmGMbTjJzlJttvEfW9cjjI.yOuW",
     role: "USER"
+}
+const creationPayload = {
+    ...partialCreationPayload,
+    password: "$2a$10$Xu39yMLoJEH/2bEkNRUFseMaICGmGMbTjJzlJttvEfW9cjjI.yOuW"
 }
 const responsePayload = {
     _id: '66326642b6e5d026db70f695',
@@ -176,6 +179,16 @@ describe("User", () => {
                             password: expect.stringMatching(/^[$]2a[$]10[$].*$/),
                             role: "USER"
                         }));
+                    });
+            });
+        });
+
+        describe("Given user data is missing password", () => {
+            it("should return a 400", async () => {
+                await supertest(app).post(`/api/users/`).send(partialCreationPayload)
+                    .set({Accept: 'application/json', 'Content-type': 'application/json'})
+                    .then(response => {
+                        expect(response.status).toEqual(400);
                     });
             });
         });
