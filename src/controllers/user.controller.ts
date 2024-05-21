@@ -30,6 +30,7 @@ export class UserController {
         } else {
             let user = new User({
                 name: sanitize(req.body.name),
+                surname: sanitize(req.body.surname),
                 username: sanitize(req.body.username),
                 email: sanitize(req.body.email),
                 password: hashSync(req.body.password, SALT_ROUNDS),
@@ -186,6 +187,7 @@ export class UserController {
         User.findByIdAndUpdate(req.decoded._id,
             {
                 name: sanitize(req.body.name),
+                surname: sanitize(req.body.surname),
                 username: sanitize(req.body.username),
                 email: sanitize(req.body.email),
                 profilePicture: sanitize(req.body.profilePicture)

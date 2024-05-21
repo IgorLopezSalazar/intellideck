@@ -13,6 +13,7 @@ const userPayload = {
 const invalidToken = "Bearer none";
 const partialCreationPayload = {
     name: "Test",
+    surname: "Test",
     username: "TestTesty",
     email: "test@test.com",
     role: "USER"
@@ -174,6 +175,7 @@ describe("User", () => {
                         expect(response.body).toMatchObject(expect.objectContaining({
                             _id: expect.any(String),
                             name: "Test",
+                            surname: "Test",
                             username: "TestTesty",
                             email: "test@test.com",
                             password: expect.stringMatching(/^[$]2a[$]10[$].*$/),
