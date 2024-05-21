@@ -48,8 +48,10 @@ router.get('/decks/:id/deckTraining/cards/today',(req: any, res: any, next: any)
     return deckController.verifyPublished(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckTrainingController.getDeckTraining(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.getCardTrainingsForToday(req, res, next);
 }, (req: any, res: any) => {
-    return cardTrainingController.getCardTrainingsForToday(req, res);
+    return cardTrainingController.verifyCardTrainings(req, res);
 })
 
 export{ router };

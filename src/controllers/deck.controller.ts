@@ -104,4 +104,42 @@ export class DeckController {
             console.log(e);
         })
     }
+
+    async publishDeck(req: any, res: any) {
+        if(req.cards.length == 0) {
+            res.status(StatusCodes.BAD_REQUEST).json("Cannot publish a deck without cards");
+        }
+        else {
+            Deck.findByIdAndUpdate(sanitize(req.params.id), {
+                isPublished: true
+            }, {returnOriginal: false, runValidators: true})
+                .then((data: any) => {
+                    res.status(StatusCodes.OK).json(data);
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
+                    console.log(e);
+                })
+        }
+    }
+
+    async getDecksForToday(req: any, res: any) {
+        if(req.cards.length == 0) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        }
+        else {
+            let deckTrainingIds = req.cards.map((card: any) => card.deckTraining.toString());
+            console.log(deckTrainingIds);
+            let decks = req.deckTrainings.filter((dt: any) => deckTrainingIds.indexOf(dt._id.toString()) != -1).map((dt: any) => dt.deck);
+            console.log(decks);
+            Deck.find({_id: {$in: decks}})
+                .then((data: any) => {
+                    res.status(StatusCodes.OK).json(data);
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
+                    console.log(e);
+                })
+        }
+    }
 }

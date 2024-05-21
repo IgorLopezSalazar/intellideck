@@ -4,6 +4,7 @@ export const USER_DOCUMENT_NAME = 'user';
 export const USER_COLLECTION_NAME = 'users';
 export interface IUser {
     name : string;
+    surname : string;
     username : string;
     email : string;
     password : string;
@@ -15,6 +16,7 @@ export interface IUser {
 
 export const userSchema = new Schema<IUser>({
     name: { type: Schema.Types.String, required: true },
+    surname: { type: Schema.Types.String, required: true },
     username: { type: Schema.Types.String, required: true, unique: true },
     email: { type: Schema.Types.String, required: true, unique: true },
     password: { type: Schema.Types.String, required: true },

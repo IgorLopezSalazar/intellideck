@@ -25,21 +25,26 @@ export class UserController {
     }
 
     async postUser(req: any, res: any) {
-        let user = new User({
-            name: sanitize(req.body.name),
-            username: sanitize(req.body.username),
-            email: sanitize(req.body.email),
-            password: hashSync(req.body.password, SALT_ROUNDS),
-            profilePicture: sanitize(req.body.profilePicture),
-            role: sanitize(req.body.role)
-        })
-        User.create(user)
-            .then((data: any) =>
-                res.status(StatusCodes.CREATED).json(data))
-            .catch((e: any) => {
-                res.status(StatusCodes.CONFLICT).json("A user with the same email or username already exists");
-                console.log(e);
+        if (!req.body.password) {
+            res.status(StatusCodes.BAD_REQUEST).json("Password missing");
+        } else {
+            let user = new User({
+                name: sanitize(req.body.name),
+                surname: sanitize(req.body.surname),
+                username: sanitize(req.body.username),
+                email: sanitize(req.body.email),
+                password: hashSync(req.body.password, SALT_ROUNDS),
+                profilePicture: sanitize(req.body.profilePicture),
+                role: sanitize(req.body.role)
             })
+            User.create(user)
+                .then((data: any) =>
+                    res.status(StatusCodes.CREATED).json(data))
+                .catch((e: any) => {
+                    res.status(StatusCodes.CONFLICT).json("A user with the same email or username already exists");
+                    console.log(e);
+                })
+        }
     }
 
     async getUser(req: any, res: any) {
@@ -81,7 +86,7 @@ export class UserController {
     }
 
     async putFollowUser(req: any, res: any, next: any) {
-       this.genericFollow(req,"followedUsers")
+        this.genericFollow(req, "followedUsers")
             .then((loggedUser: any) => {
                 console.log(loggedUser)
                 req.followUnfollowData = loggedUser;
@@ -135,7 +140,7 @@ export class UserController {
     }
 
     async putFollowDeck(req: any, res: any, next: any) {
-        this.genericFollow(req,"followedDecks")
+        this.genericFollow(req, "followedDecks")
             .then((loggedUser: any) => {
                 req.followUnfollowData = loggedUser;
                 next();
@@ -182,6 +187,7 @@ export class UserController {
         User.findByIdAndUpdate(req.decoded._id,
             {
                 name: sanitize(req.body.name),
+                surname: sanitize(req.body.surname),
                 username: sanitize(req.body.username),
                 email: sanitize(req.body.email),
                 profilePicture: sanitize(req.body.profilePicture)
@@ -193,5 +199,29 @@ export class UserController {
                 res.status(StatusCodes.CONFLICT).json("Email or username already in use");
                 console.log(e);
             })
+    }
+
+    async verifyNewPassword(req: any, res: any, next: any) {
+        if (!req.body.passwords) {
+            next();
+        } else if (!req.body.passwords.old || !req.body.passwords.new) {
+            res.status(StatusCodes.BAD_REQUEST).json("Old or new password missing");
+        } else {
+            User.findById(req.decoded._id)
+                .then((user: any) => {
+                    compare(req.body.passwords.old, user.password).then((match: boolean) => {
+                        if (!match) {
+                            res.status(StatusCodes.BAD_REQUEST).json("Incorrect password");
+                        } else {
+                            User.findByIdAndUpdate(req.decoded._id,
+                                {password: hashSync(req.body.passwords.new, SALT_ROUNDS)}).then(next());
+                        }
+                    });
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while processing the login. Please try again later");
+                    console.log(e);
+                });
+        }
     }
 }
