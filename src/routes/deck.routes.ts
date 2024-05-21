@@ -5,6 +5,8 @@ import {UserController} from "../controllers/user.controller.ts";
 import {TagController} from "../controllers/tag.controller.ts";
 import {TopicController} from "../controllers/topic.controller.ts";
 import {CardController} from "../controllers/card.controller.ts";
+import {DeckTrainingController} from "../controllers/deck.training.controller.ts";
+import {CardTrainingController} from "../controllers/card.training.controller.ts";
 
 const router = express.Router();
 const deckController = new DeckController();
@@ -12,12 +14,24 @@ const userController = new UserController();
 const tagController = new TagController();
 const topicController = new TopicController();
 const cardController = new CardController();
+const deckTrainingController = new DeckTrainingController();
+const cardTrainingController = new CardTrainingController();
 const middleware: Middleware = new Middleware();
 
 router.post('/decks',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {
     return deckController.postDeck(req, res);
+})
+
+router.get('/decks/today',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckTrainingController.getDeckTrainingsOfUser(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.getCardTrainingsForToday(req, res, next);
+}, (req: any, res: any) => {
+    return deckController.getDecksForToday(req, res);
 })
 
 router.get('/decks/:id',(req: any, res: any, next: any) => {
@@ -65,7 +79,6 @@ router.put('/decks/:id',(req: any, res: any, next: any) => {
 }, (req: any, res: any) => {
     return deckController.updateDeck(req, res);
 })
-
 
 router.put('/decks/:id/publish',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);

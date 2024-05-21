@@ -54,6 +54,17 @@ export class DeckTrainingController {
             })
     }
 
+    async getDeckTrainingsOfUser(req: any, res: any, next: any) {
+        DeckTraining.find({user: req.decoded._id})
+            .then((data: any) => {
+                req.deckTrainings = data;
+                next();
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred while obtaining the data");
+            })
+    }
+
     async validateDeckTraining(req: any, res: any) {
         if (!req.deckTraining) {
             res.status(StatusCodes.NO_CONTENT).json();
@@ -92,7 +103,7 @@ export class DeckTrainingController {
     }
 
     async putStatisticsAverageTime(req: any, res: any, next: any) {
-        if(!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0) {
+        if (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0) {
             res.status(StatusCodes.BAD_REQUEST).json("Missing or invalid completion time of attempt");
         } else {
             const avgCompletionTimeSeconds = Math.round(((req.deckTraining.statistics.avgCompletionTimeSeconds *

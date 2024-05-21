@@ -122,4 +122,28 @@ export class DeckController {
                 })
         }
     }
+
+    async getDecksForToday(req: any, res: any) {
+        if(req.cards.length == 0) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        }
+        else {
+            let deckTrainingIds = req.cards.map((card: any) => card.deckTraining.toString());
+            console.log(deckTrainingIds);
+            let decks = req.deckTrainings.filter((dt: any) => deckTrainingIds.indexOf(dt._id.toString()) != -1).map((dt: any) => dt.deck);
+            console.log(decks);
+            Deck.find({_id: {$in: decks}})
+                .then((data: any) => {
+                    if(data.length == 0) {
+                        res.status(StatusCodes.NO_CONTENT).json();
+                    } else {
+                        res.status(StatusCodes.OK).json(data);
+                    }
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
+                    console.log(e);
+                })
+        }
+    }
 }

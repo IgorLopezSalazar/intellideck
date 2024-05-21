@@ -18,21 +18,21 @@ export class CardTrainingController {
         });
     }
 
-    async getCardTrainingsForToday(req: any, res: any) {
+    async getCardTrainingsForToday(req: any, res: any, next: any) {
         let today = new Date();
         let day = (today.getDate() < 10)? "0" + today.getDate() : today.getDate();
         let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth() + 1;
         let lowerDate = new Date(today.getFullYear() + "-" + month + "-" + day);
+        let deckTrainingIds = (!req.deckTrainings)? [] : req.deckTrainings.map((dt: any) => dt._id);
+        deckTrainingIds.push((!req.deckTraining)? undefined : req.deckTraining._id);
+
         CardTraining.find({
-            deckTraining: req.deckTraining._id,
+            deckTraining: {$in: deckTrainingIds},
             nextTraining: { "$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1) },
             isShown: true
         }).then((data: any) => {
-            if (data.length == 0) {
-                res.status(StatusCodes.NO_CONTENT).json();
-            } else {
-                res.status(StatusCodes.OK).json(data);
-            }
+            req.cards = data;
+            next();
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
             console.log(e);
