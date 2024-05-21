@@ -8,10 +8,13 @@ import {router as CardRouter} from "./routes/card.routes.ts";
 import {router as RatingRouter} from "./routes/rating.routes.ts";
 import {router as DeckTrainingRouter} from "./routes/deck.training.routes.ts";
 import {router as CardTrainingRouter} from "./routes/card.training.routes.ts";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors({origin: `http://${process.env.HOST}:${process.env.FRONTEND_PORT}`}));
+app.use(cors({origin: `http://${process.env.LOCAL_HOST}:${process.env.FRONTEND_PORT}`}));
 app.disable("x-powered-by");
 app.use(express.urlencoded({extended: false}));
 app.use('/api', UserRouter);
