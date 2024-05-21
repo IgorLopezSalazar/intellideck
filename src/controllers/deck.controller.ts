@@ -134,11 +134,7 @@ export class DeckController {
             console.log(decks);
             Deck.find({_id: {$in: decks}})
                 .then((data: any) => {
-                    if(data.length == 0) {
-                        res.status(StatusCodes.NO_CONTENT).json();
-                    } else {
-                        res.status(StatusCodes.OK).json(data);
-                    }
+                    res.status(StatusCodes.OK).json(data);
                 })
                 .catch((e: any) => {
                     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");

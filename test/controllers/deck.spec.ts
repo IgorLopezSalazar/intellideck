@@ -7,6 +7,8 @@ import {User} from "../../src/models/user.ts";
 import {Topic} from "../../src/models/topic.ts";
 import {Tag} from "../../src/models/tag.ts";
 import {Card} from "../../src/models/card.ts";
+import {DeckTraining} from "../../src/models/deck.training.ts";
+import {CardTraining} from "../../src/models/card.training.ts";
 
 const middleware = new Middleware();
 
@@ -34,6 +36,28 @@ const cardPayload = {
     question: "2 * 3?",
     answer: "6",
     deck: responsePayload._id
+};
+
+const deckTrainingPayload = {
+    _id: "66326742b6e5d026db70f694",
+    startDate: new Date("2024-05-20"),
+    boxAmount: 7,
+    backtrack: "BACKTRACK_PRIOR",
+    user: userPayload.id,
+    deck: responsePayload._id,
+    statistics: {
+        attempts: 1,
+        avgCompletionTimeSeconds: 360
+    }
+};
+
+const cardTrainingPayload = {
+    nextTraining: new Date("2024-05-02"),
+    isShown: true,
+    _id: '6640e53d2da54166918514bd',
+    box: 1,
+    deckTraining: deckTrainingPayload._id,
+    card: cardPayload._id
 };
 
 describe("Deck", () => {
@@ -239,6 +263,38 @@ describe("Deck", () => {
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+    });
+
+    describe("GET Decks for studying today", () => {
+        describe("Given user has no studies for today", () => {
+            it("should return a 204", async () => {
+                jest.spyOn(DeckTraining, "find").mockResolvedValueOnce([]);
+                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/today`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+
+        describe("Given user has studies for today", () => {
+            it("should return a 200 and the decks to study", async () => {
+                jest.spyOn(DeckTraining, "find").mockResolvedValueOnce([deckTrainingPayload]);
+                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([cardTrainingPayload]);
+                jest.spyOn(Deck, "find").mockResolvedValueOnce([responsePayload]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/today`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
                         });
                 });
             });
