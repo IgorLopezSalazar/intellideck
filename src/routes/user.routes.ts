@@ -12,6 +12,16 @@ router.get('/users/followed/:id',(req: any, res: any, next: any) => {
     return userController.getFollowedUsers(req, res);
 })
 
+router.get('/users/filter',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.filterUsersFollowers(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.filterUsersFollowed(req, res, next);
+}, (req: any, res: any) => {
+    return userController.validateFilter(req, res);
+})
+
 router.get('/users/followers/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any) => {

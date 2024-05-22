@@ -7,6 +7,7 @@ import sanitize from 'mongo-sanitize';
 import {User} from "../models/user.ts";
 import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
+import mongoose from 'mongoose';
 
 const SALT_ROUNDS: number = 10;
 const middleware: Middleware = new Middleware();
@@ -130,13 +131,95 @@ export class UserController {
 
     async getFollowers(req: any, res: any) {
         User.find({"followedUsers": {$in: [sanitize(req.params.id)]}})
-            .then((data: any[]) => {
+            .then((data: any) => {
                 if (data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             });
+    }
+
+    async filterUsersFollowers(req: any, res: any, next: any) {
+        User.find({
+            $and: [
+                {username: {$regex: (req.query.username) ? sanitize(req.query.username) : ""}},
+                (req.query.follower == "true") ?
+                    {followedUsers: {$in: [new mongoose.Types.ObjectId(sanitize(req.decoded._id))]}} : {}
+            ]
+        })
+            .then((data: any) => {
+                req.followers = data;
+                next();
+            });
+    }
+
+    async filterUsersFollowed(req: any, res: any, next: any) {
+        if(req.query.followed == "true") {
+            User.aggregate([
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(sanitize(req.decoded._id))
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        let: {"followedUsersLogged": "$followedUsers"},
+                        pipeline: [
+                            {
+                                $match: {
+                                    $and: [
+                                        {$expr: {$in: ["$_id", "$$followedUsersLogged"]}},
+                                        {username: {$regex: (req.query.username) ? sanitize(req.query.username) : ""}}
+                                    ]
+                                }
+                            }
+                        ],
+                        as: "followedUsers"
+                    }
+                }
+            ])
+                .then((data: any) => {
+                    req.followed = data;
+                    next();
+                });
+        } else {
+            next();
+        }
+    }
+
+    async validateFilter(req: any, res: any) {
+        if(req.query.followed == "true" && req.query.follower == "true") {
+            let users = this.intersect((req.followed.length == 0)? []: req.followed[0].followedUsers, req.followers);
+            if (users.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(users);
+            }
+        } else if(req.query.followed == "true") {
+            if (!req.followed || req.followed.length == 0 || req.followed[0].followedUsers.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(req.followed[0].followedUsers);
+            }
+        } else {
+            if (!req.followers || req.followers.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(req.followers);
+            }
+        }
+    }
+
+    intersect(a: any[], b: any[]): any {
+        let users : any = [];
+        a.forEach((aUser: any) => {
+            if(b.some((bUser: any) => bUser._id.toString() == aUser._id.toString())) {
+                users.push(aUser);
+            }
+        })
+        return users;
     }
 
     async putFollowDeck(req: any, res: any, next: any) {
