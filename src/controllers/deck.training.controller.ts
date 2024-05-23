@@ -87,13 +87,11 @@ export class DeckTrainingController {
             .then((data: any) => {
                 if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json("Deck training not found");
+                } else if (!req.body.cards) {
+                    res.status(StatusCodes.OK).json(data);
                 } else {
-                    if (!req.body.cards) {
-                        res.status(StatusCodes.OK).json(data);
-                    } else {
-                        req.deckTraining = data;
-                        next();
-                    }
+                    req.deckTraining = data;
+                    next();
                 }
             })
             .catch((e: any) => {

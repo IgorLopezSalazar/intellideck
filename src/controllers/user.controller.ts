@@ -146,7 +146,7 @@ export class UserController {
             $and: [
                 {username: {$regex: (req.query.username) ? sanitize(req.query.username) : ""}},
                 (req.query.follower == "true") ?
-                    {followedUsers: {$in: [new mongoose.Types.ObjectId(sanitize(req.decoded._id))]}} : {}
+                    {followedUsers: {$in: [mongoose.Types.ObjectId.createFromHexString(sanitize(req.decoded._id))]}} : {}
             ]
         })
             .then((data: any) => {
@@ -168,7 +168,7 @@ export class UserController {
             User.aggregate([
                 {
                     $match: {
-                        _id: new mongoose.Types.ObjectId(sanitize(req.decoded._id))
+                        _id: mongoose.Types.ObjectId.createFromHexString(sanitize(req.decoded._id))
                     }
                 },
                 {
