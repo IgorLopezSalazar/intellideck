@@ -61,6 +61,100 @@ const cardTrainingPayload = {
 };
 
 describe("Deck", () => {
+    describe("GET Decks filtered", () => {
+        describe("Given Internal Server Error", () => {
+            describe("While getting decks", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, 'aggregate').mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/filter?followed=true`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given followed = false", () => {
+            describe("Given no result found", () => {
+                it("should return a 204", async () => {
+                    jest.spyOn(Deck, 'aggregate').mockResolvedValueOnce([]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/filter?title=hola`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given results found", () => {
+                it("should return a 200 and the decks", async () => {
+                    jest.spyOn(Deck, 'aggregate').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, 'findById').mockImplementation(() => ({
+                        populate: () => ({
+                            exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                resolve({...userPayload, followedDecks: [responsePayload]});
+                            }))
+                        })
+                    } as any));
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/filter?avgDeckRating=0&topic=a&tag=a&date=2024-01-01&creator=a`)
+                            .set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given followed = true", () => {
+            describe("Given no result found", () => {
+                it("should return a 204", async () => {
+                    let responsePayloadModified = {...responsePayload};
+                    responsePayloadModified._id = userPayload.id;
+                    jest.spyOn(Deck, 'aggregate').mockResolvedValueOnce([responsePayloadModified]);
+                    jest.spyOn(User, 'findById').mockImplementation(() => ({
+                        populate: () => ({
+                            exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                resolve({...userPayload, followedDecks: [responsePayload]});
+                            }))
+                        })
+                    } as any));
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/filter?followed=true`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given results found", () => {
+                it("should return a 200 and the decks", async () => {
+                    jest.spyOn(Deck, 'aggregate').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, 'findById').mockImplementation(() => ({
+                        populate: () => ({
+                            exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                resolve({...userPayload, followedDecks: [responsePayload]});
+                            }))
+                        })
+                    } as any));
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/filter?followed=true`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+        });
+    });
+
     describe("POST Deck Method", () => {
         describe("Given deck data is valid", () => {
             it("should return a 201 and the created object", async () => {

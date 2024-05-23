@@ -24,6 +24,16 @@ router.post('/decks',(req: any, res: any, next: any) => {
     return deckController.postDeck(req, res);
 })
 
+router.get('/decks/filter',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.filterDecks(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.getDecksFollowed(req, res, next);
+}, (req: any, res: any) => {
+    return deckController.validateFilter(req, res);
+})
+
 router.get('/decks/today',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
@@ -62,8 +72,10 @@ router.put('/decks/unfollow',(req: any, res: any, next: any) => {
 
 router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.getDecksFollowed(req, res, next);
 }, (req: any, res: any) => {
-    return userController.getDecksFollowed(req, res);
+    return userController.validateDecksFollowed(req, res);
 })
 
 router.put('/decks/:id',(req: any, res: any, next: any) => {

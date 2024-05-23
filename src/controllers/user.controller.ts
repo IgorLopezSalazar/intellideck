@@ -8,6 +8,7 @@ import {User} from "../models/user.ts";
 import {StatusCodes} from 'http-status-codes';
 import {Middleware} from "../middleware.ts";
 import mongoose from 'mongoose';
+import {Helper} from "../helper.ts";
 
 const SALT_ROUNDS: number = 10;
 const middleware: Middleware = new Middleware();
@@ -145,7 +146,7 @@ export class UserController {
             $and: [
                 {username: {$regex: (req.query.username) ? sanitize(req.query.username) : ""}},
                 (req.query.follower == "true") ?
-                    {followedUsers: {$in: [new mongoose.Types.ObjectId(sanitize(req.decoded._id))]}} : {}
+                    {followedUsers: {$in: [mongoose.Types.ObjectId.createFromHexString(sanitize(req.decoded._id))]}} : {}
             ]
         })
             .then((data: any) => {
@@ -167,7 +168,7 @@ export class UserController {
             User.aggregate([
                 {
                     $match: {
-                        _id: new mongoose.Types.ObjectId(sanitize(req.decoded._id))
+                        _id: mongoose.Types.ObjectId.createFromHexString(sanitize(req.decoded._id))
                     }
                 },
                 {
@@ -207,7 +208,7 @@ export class UserController {
 
     async validateFilter(req: any, res: any) {
         if (req.query.followed == "true" && req.query.follower == "true") {
-            let users = this.intersect(req.followed, req.followers);
+            let users = Helper.intersect(req.followed, req.followers);
             if (users.length == 0) {
                 res.status(StatusCodes.NO_CONTENT).json();
             } else {
@@ -218,16 +219,6 @@ export class UserController {
         } else {
             res.status(StatusCodes.OK).json(req.followers);
         }
-    }
-
-    intersect(a: any[], b: any[]): any {
-        let users: any = [];
-        a.forEach((aUser: any) => {
-            if (b.some((bUser: any) => bUser._id.toString() == aUser._id.toString())) {
-                users.push(aUser);
-            }
-        })
-        return users;
     }
 
     async putFollowDeck(req: any, res: any, next: any) {
@@ -262,16 +253,25 @@ export class UserController {
         }
     }
 
-    async getDecksFollowed(req: any, res: any) {
-        User.findById(sanitize(req.params.id), 'followedDecks')
+    async getDecksFollowed(req: any, res: any, next: any) {
+        User.findById((req.params.id)?sanitize(req.params.id):req.decoded._id, 'followedDecks')
             .populate("followedDecks").exec()
             .then((data: any) => {
-                if (!data || data.length == 0) {
-                    res.status(StatusCodes.NO_CONTENT).json();
-                } else {
-                    res.status(StatusCodes.OK).json(data);
-                }
+                req.userDecksFollowed = data;
+                next();
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
+                console.log(e);
             });
+    }
+
+    async validateDecksFollowed(req: any, res: any) {
+        if (!req.userDecksFollowed || req.userDecksFollowed.length == 0) {
+            res.status(StatusCodes.NO_CONTENT).json();
+        } else {
+            res.status(StatusCodes.OK).json(req.userDecksFollowed);
+        }
     }
 
     async updateUser(req: any, res: any) {

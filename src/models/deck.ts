@@ -10,6 +10,7 @@ export interface IDeck {
     description : string;
     image : string;
     isPublished : boolean;
+    avgDeckRating: number;
     publishDate: Date;
     creator? : IUser;
     topic : ITopic;
@@ -21,6 +22,10 @@ export const deckSchema = new Schema<IDeck>({
     description: { type: Schema.Types.String },
     image: { type: Schema.Types.String },
     isPublished: { type: Schema.Types.Boolean, required: true },
+    avgDeckRating: { type: Schema.Types.Number, min: 1, max: 10, validate : {
+            validator : Number.isInteger,
+            message   : '{VALUE} is not an integer value'
+        } },
     publishDate: {type: Schema.Types.Date},
     creator: { type: Schema.Types.ObjectId, ref: 'user' },
     topic: { type: Schema.Types.ObjectId, ref: 'topic' },
