@@ -10,6 +10,7 @@ export interface IDeck {
     description : string;
     image : string;
     isPublished : boolean;
+    publishDate: Date;
     creator? : IUser;
     topic : ITopic;
     tags: ITag[];
@@ -20,6 +21,7 @@ export const deckSchema = new Schema<IDeck>({
     description: { type: Schema.Types.String },
     image: { type: Schema.Types.String },
     isPublished: { type: Schema.Types.Boolean, required: true },
+    publishDate: {type: Schema.Types.Date},
     creator: { type: Schema.Types.ObjectId, ref: 'user' },
     topic: { type: Schema.Types.ObjectId, ref: 'topic' },
     tags: [{ type: Schema.Types.ObjectId, ref: 'tag' }]

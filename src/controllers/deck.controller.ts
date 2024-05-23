@@ -111,7 +111,8 @@ export class DeckController {
         }
         else {
             Deck.findByIdAndUpdate(sanitize(req.params.id), {
-                isPublished: true
+                isPublished: true,
+                publishDate: new Date()
             }, {returnOriginal: false, runValidators: true})
                 .then((data: any) => {
                     res.status(StatusCodes.OK).json(data);
@@ -137,7 +138,7 @@ export class DeckController {
                     res.status(StatusCodes.OK).json(data);
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error");
                     console.log(e);
                 })
         }
