@@ -149,13 +149,21 @@ export class UserController {
             ]
         })
             .then((data: any) => {
-                req.followers = data;
-                next();
+                if (!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    req.followers = data;
+                    next();
+                }
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
+                console.log(e);
             });
     }
 
     async filterUsersFollowed(req: any, res: any, next: any) {
-        if(req.query.followed == "true") {
+        if (req.query.followed == "true") {
             User.aggregate([
                 {
                     $match: {
@@ -181,8 +189,16 @@ export class UserController {
                 }
             ])
                 .then((data: any) => {
-                    req.followed = data;
-                    next();
+                    if (!data || data.length == 0 || data[0].followedUsers.length == 0) {
+                        res.status(StatusCodes.NO_CONTENT).json();
+                    } else {
+                        req.followed = data[0].followedUsers;
+                        next();
+                    }
+                })
+                .catch((e: any) => {
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
+                    console.log(e);
                 });
         } else {
             next();
@@ -190,32 +206,24 @@ export class UserController {
     }
 
     async validateFilter(req: any, res: any) {
-        if(req.query.followed == "true" && req.query.follower == "true") {
-            let users = this.intersect((req.followed.length == 0)? []: req.followed[0].followedUsers, req.followers);
+        if (req.query.followed == "true" && req.query.follower == "true") {
+            let users = this.intersect(req.followed, req.followers);
             if (users.length == 0) {
                 res.status(StatusCodes.NO_CONTENT).json();
             } else {
                 res.status(StatusCodes.OK).json(users);
             }
-        } else if(req.query.followed == "true") {
-            if (!req.followed || req.followed.length == 0 || req.followed[0].followedUsers.length == 0) {
-                res.status(StatusCodes.NO_CONTENT).json();
-            } else {
-                res.status(StatusCodes.OK).json(req.followed[0].followedUsers);
-            }
+        } else if (req.query.followed == "true") {
+            res.status(StatusCodes.OK).json(req.followed);
         } else {
-            if (!req.followers || req.followers.length == 0) {
-                res.status(StatusCodes.NO_CONTENT).json();
-            } else {
-                res.status(StatusCodes.OK).json(req.followers);
-            }
+            res.status(StatusCodes.OK).json(req.followers);
         }
     }
 
     intersect(a: any[], b: any[]): any {
-        let users : any = [];
+        let users: any = [];
         a.forEach((aUser: any) => {
-            if(b.some((bUser: any) => bUser._id.toString() == aUser._id.toString())) {
+            if (b.some((bUser: any) => bUser._id.toString() == aUser._id.toString())) {
                 users.push(aUser);
             }
         })

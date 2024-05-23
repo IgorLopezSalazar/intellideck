@@ -90,6 +90,122 @@ describe("User", () => {
         });
     })
 
+    describe("GET Users filtered", () => {
+        describe("Given Internal Server Error", () => {
+            describe("While getting followers", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(User, 'find').mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?follower=true`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While getting followed", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, "aggregate").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?followed=true`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given follower = true, followed = false", () => {
+            describe("Given no result found", () => {
+                it("should return a 204", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?follower=true&username=hola`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given results found", () => {
+                it("should return a 200 and the users", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayload]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?follower=true&username=T`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given follower = false, followed = true", () => {
+            describe("Given no result found", () => {
+                it("should return a 204", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, "aggregate").mockResolvedValueOnce([{...responsePayload, followedUsers: []}]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?followed=true&username=T`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given results found", () => {
+                it("should return a 200 and the users", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, "aggregate").mockResolvedValueOnce([{...responsePayload, followedUsers: [responsePayload]}]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?followed=true&username=T`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given follower = true, followed = true", () => {
+            describe("Given no result found", () => {
+                it("should return a 204", async () => {
+                    let responsePayloadEdited = {...responsePayload};
+                    responsePayloadEdited._id = userPayload.id;
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayloadEdited]);
+                    jest.spyOn(User, "aggregate").mockResolvedValueOnce([{...responsePayloadEdited, followedUsers: [responsePayload]}]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?followed=true&follower=true&username=T`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given results found", () => {
+                it("should return a 200 and the users", async () => {
+                    jest.spyOn(User, 'find').mockResolvedValueOnce([responsePayload]);
+                    jest.spyOn(User, "aggregate").mockResolvedValueOnce([{...responsePayload, followedUsers: [responsePayload]}]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/filter?followed=true&follower=true&username=T`).set({"Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+        });
+    });
+
     describe("GET Users Followed Method", () => {
         describe("User logged", () => {
             describe("Given user ID provided and users followed", () => {
