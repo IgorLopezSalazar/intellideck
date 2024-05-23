@@ -2,6 +2,7 @@ import sanitize from 'mongo-sanitize';
 
 import {Deck} from "../models/deck.ts";
 import {StatusCodes} from 'http-status-codes';
+import {Helper} from "../helper.ts";
 
 export class DeckController {
     async postDeck(req: any, res: any) {
@@ -152,6 +153,108 @@ export class DeckController {
                     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error");
                     console.log(e);
                 })
+        }
+    }
+
+    async filterDecks(req: any, res: any, next: any) {
+        let date = new Date(sanitize(req.query.date));
+        Deck.aggregate([
+            {
+                $match: {
+                    $and: [
+                        {title: {$regex: (req.query.title) ? sanitize(req.query.title) : ""}},
+                        {isPublished: true},
+                        {publishDate: {$gte: (Number.isNaN(date.valueOf()))? new Date(0) : date}},
+                        {avgDeckRating: {$gte: (req.query.avgDeckRating)? sanitize(Number.parseInt(req.query.avgDeckRating)): 0}}
+                    ]
+                }
+            },
+            {
+                $lookup: {
+                    from: "topics",
+                    let: {"topic": "$topic"},
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    {$expr: {$eq: ["$_id", "$$topic"]}},
+                                    {name: {$regex: (req.query.topic) ? sanitize(req.query.topic) : ""}}
+                                ]
+                            }
+                        }
+                    ],
+                    as: "topic"
+                }
+            },
+            {
+                $lookup: {
+                    from: "tags",
+                    let: {"tags": "$tags"},
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    {$expr: {$in: ["$_id", "$$tags"]}},
+                                    {name: {$regex: (req.query.tag) ? sanitize(req.query.tag) : ""}}
+                                ]
+                            }
+                        }
+                    ],
+                    as: "tags"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    let: {"creator": "$creator"},
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    {$expr: {$eq: ["$_id", "$$creator"]}},
+                                    {username: {$regex: (req.query.creator) ? sanitize(req.query.creator) : ""}}
+                                ]
+                            }
+                        }
+                    ],
+                    as: "creator"
+                }
+            },
+            {
+                $match: {
+                    $and: [
+                        {$expr: {$ne:["$topic", []]}},
+                        {$expr: {$ne:["$tags", []]}},
+                        {$expr: {$ne:["$creator", []]}}
+                    ]
+                }
+            },
+        ])
+            .then((data: any) => {
+                if(!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                }
+                else {
+                    req.decks = data;
+                    next();
+                }
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
+                console.log(e);
+            });
+    }
+
+    async validateFilter(req: any, res: any) {
+        if (req.query.followed == "true") {
+            let decks = Helper.intersect(req.decks, req.userDecksFollowed.followedDecks);
+            if (decks.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(decks);
+            }
+        } else {
+            res.status(StatusCodes.OK).json(req.decks);
         }
     }
 }
