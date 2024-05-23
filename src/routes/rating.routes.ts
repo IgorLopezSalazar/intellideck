@@ -12,32 +12,42 @@ router.post('/decks/:id/ratings',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
-}, (req: any, res: any) => {
-    return ratingController.postRating(req, res);
-})
-
-router.get('/decks/:id/ratings',(req: any, res: any, next: any) => {
-    return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
-    return deckController.verifyPublished(req, res, next);
+    return ratingController.postRating(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return ratingController.getAvgRatingOfDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.updateDeckRating(req, res, next);
 }, (req: any, res: any) => {
-    return ratingController.getAvgRatingOfDeck(req, res);
+    return ratingController.responsePostRating(req, res);
 })
 
 router.put('/decks/:id/ratings',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return ratingController.putRating(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return ratingController.getAvgRatingOfDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.updateDeckRating(req, res, next);
 }, (req: any, res: any) => {
-    return ratingController.putRating(req, res);
+    return ratingController.responsePutRating(req, res);
 })
 
 router.delete('/decks/:id/ratings',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return ratingController.deleteRating(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return ratingController.getAvgRatingOfDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.updateDeckRating(req, res, next);
 }, (req: any, res: any) => {
-    return ratingController.deleteRating(req, res);
+    return ratingController.responseDeleteRating(req, res);
 })
 
 export{ router };

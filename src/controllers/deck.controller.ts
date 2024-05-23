@@ -37,8 +37,8 @@ export class DeckController {
     async verifyPublished(req: any, res: any, next: any) {
         Deck.findOne({
             $or: [
-                { _id: sanitize(req.body.id) },
-                { _id: sanitize(req.params.id) }
+                {_id: sanitize(req.body.id)},
+                {_id: sanitize(req.params.id)}
             ],
             isPublished: true
         }).then((data: any) => {
@@ -66,6 +66,19 @@ export class DeckController {
             .exec()
             .then((data: any) => {
                 res.status(StatusCodes.OK).json(data);
+            })
+            .catch((e: any) => {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
+                console.log(e);
+            })
+    }
+
+    async updateDeckRating(req: any, res: any, next: any) {
+        Deck.findByIdAndUpdate(sanitize(req.params.id), {
+            avgDeckRating: req.avg
+        }, {returnOriginal: false, runValidators: true})
+            .then((data: any) => {
+                next();
             })
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
@@ -106,10 +119,9 @@ export class DeckController {
     }
 
     async publishDeck(req: any, res: any) {
-        if(req.cards.length == 0) {
+        if (req.cards.length == 0) {
             res.status(StatusCodes.BAD_REQUEST).json("Cannot publish a deck without cards");
-        }
-        else {
+        } else {
             Deck.findByIdAndUpdate(sanitize(req.params.id), {
                 isPublished: true,
                 publishDate: new Date()
@@ -125,10 +137,9 @@ export class DeckController {
     }
 
     async getDecksForToday(req: any, res: any) {
-        if(req.cards.length == 0) {
+        if (req.cards.length == 0) {
             res.status(StatusCodes.NO_CONTENT).json();
-        }
-        else {
+        } else {
             let deckTrainingIds = req.cards.map((card: any) => card.deckTraining.toString());
             console.log(deckTrainingIds);
             let decks = req.deckTrainings.filter((dt: any) => deckTrainingIds.indexOf(dt._id.toString()) != -1).map((dt: any) => dt.deck);

@@ -4,30 +4,45 @@ import {Rating} from "../models/rating.ts";
 import {StatusCodes} from 'http-status-codes';
 
 export class RatingController {
-    async postRating(req: any, res: any) {
+    async postRating(req: any, res: any, next: any) {
         let rating = new Rating({
             rate: sanitize(req.body.rate),
             user: sanitize(req.decoded._id),
             deck: sanitize(req.params.id)
         })
         Rating.create(rating)
-            .then((data: any) =>
-                res.status(StatusCodes.CREATED).json(data))
+            .then((data: any) => {
+                req.rating = data;
+                next();
+            })
             .catch((e: any) => {
                 res.status(StatusCodes.BAD_REQUEST).json("The rating could not be created");
                 console.log(e);
             })
     }
 
-    async getAvgRatingOfDeck(req: any, res: any) {
+    async responsePostRating(req: any, res: any) {
+        res.status(StatusCodes.CREATED).json(req.rating);
+    }
+
+    async responsePutRating(req: any, res: any) {
+        res.status(StatusCodes.OK).json(req.rating);
+    }
+
+    async responseDeleteRating(req: any, res: any) {
+        res.status(StatusCodes.NO_CONTENT).json();
+    }
+
+    async getAvgRatingOfDeck(req: any, res: any, next: any) {
         Rating.find({
             deck: sanitize(req.params.id)
         }).then((data: any[]) => {
             if (data.length == 0) {
-                res.status(StatusCodes.OK).json({rate: 0});
+                req.avg = 0;
             } else {
-                res.status(StatusCodes.OK).json({rate: this.calculateAvgRating(data)});
+                req.avg = this.calculateAvgRating(data);
             }
+            next();
         }).catch((e: any) => {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
             console.log(e);
@@ -40,7 +55,7 @@ export class RatingController {
         return Math.round(avg / data.length);
     }
 
-    async putRating(req: any, res: any) {
+    async putRating(req: any, res: any, next: any) {
         Rating.findOneAndUpdate({
             user: sanitize(req.decoded._id),
             deck: sanitize(req.params.id)
@@ -54,7 +69,8 @@ export class RatingController {
                 if (!data) {
                     res.status(StatusCodes.BAD_REQUEST).json("Rating could not be updated");
                 } else {
-                    res.status(StatusCodes.OK).json(data);
+                    req.rating = data;
+                    next();
                 }
             })
             .catch((e: any) => {
@@ -63,13 +79,12 @@ export class RatingController {
             })
     }
 
-    async deleteRating(req: any, res: any) {
+    async deleteRating(req: any, res: any, next: any) {
         Rating.findOneAndDelete({
             user: sanitize(req.decoded._id),
             deck: sanitize(req.params.id)
         })
-            .then((data: any) =>
-                res.status(StatusCodes.NO_CONTENT).json())
+            .then((data: any) => next())
             .catch((e: any) => {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
                 console.log(e);

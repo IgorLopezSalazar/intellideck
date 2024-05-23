@@ -33,52 +33,6 @@ const responsePayload = [{
 }];
 
 describe("Rating", () => {
-    describe("GET average rating of deck", () => {
-        describe("Given ratings of deck exist", () => {
-            it("should return a 200 and the average", async () => {
-                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                jest.spyOn(Rating, "find").mockResolvedValueOnce(responsePayload);
-                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`)
-                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                        .then(response => {
-                            expect(response.status).toEqual(200);
-                            expect(response.body).toMatchObject({rate: 6});
-                        });
-                });
-            });
-        });
-
-        describe("Given no ratings exist", () => {
-            it("should return a 200 and a 0", async () => {
-                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                jest.spyOn(Rating, "find").mockResolvedValueOnce([]);
-                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`)
-                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                        .then(response => {
-                            expect(response.status).toEqual(200);
-                            expect(response.body).toMatchObject({rate: 0});
-                        });
-                });
-            });
-        });
-
-        describe("Given Internal Error occurs", () => {
-            it("should return a 500", async () => {
-                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                jest.spyOn(Rating, "find").mockRejectedValueOnce(new Error());
-                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`)
-                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                        .then(response => {
-                            expect(response.status).toEqual(500);
-                        });
-                });
-            });
-        });
-    });
-
     describe("POST Rating", () => {
         describe("Given user has not rated deck yet", () => {
             describe("Given data is valid", () => {
@@ -88,6 +42,8 @@ describe("Rating", () => {
                         .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
                             resolve(responsePayload[0]);
                         }));
+                    jest.spyOn(Rating, "find").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(deckPayload);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).post(`/api/decks/${deckPayload._id}/ratings`).send(
                             {rate: responsePayload[0].rate})
@@ -143,6 +99,8 @@ describe("Rating", () => {
                 it("should return a 200 and the updated rating", async () => {
                     jest.spyOn(Rating, "findOneAndUpdate").mockResolvedValueOnce(responsePayload[0]);
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
+                    jest.spyOn(Rating, "find").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(deckPayload);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/decks/${deckPayload._id}/ratings`).send(
                             {rate: responsePayload[0].rate})
@@ -217,6 +175,8 @@ describe("Rating", () => {
             it("should return a 204", async () => {
                 jest.spyOn(Rating, "findOneAndDelete").mockResolvedValueOnce(null);
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
+                jest.spyOn(Rating, "find").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(deckPayload);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).delete(`/api/decks/${deckPayload._id}/ratings`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
