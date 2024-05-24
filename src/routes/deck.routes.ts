@@ -20,8 +20,8 @@ const middleware: Middleware = new Middleware();
 
 router.post('/decks',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.postDeck(req, res);
+}, (req: any, res: any, next: any) => {
+    return deckController.postDeck(req, res, next);
 })
 
 router.get('/decks/filter',(req: any, res: any, next: any) => {
@@ -40,14 +40,14 @@ router.get('/decks/today',(req: any, res: any, next: any) => {
     return deckTrainingController.getDeckTrainingsOfUser(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardTrainingController.getCardTrainingsForToday(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.getDecksForToday(req, res);
+}, (req: any, res: any, next: any) => {
+    return deckController.getDecksForToday(req, res, next);
 })
 
 router.get('/decks/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.getUserDecks(req, res);
+}, (req: any, res: any, next: any) => {
+    return deckController.getUserDecks(req, res, next);
 })
 
 router.put('/decks/follow',(req: any, res: any, next: any) => {
@@ -88,8 +88,8 @@ router.put('/decks/:id',(req: any, res: any, next: any) => {
     return topicController.validateTopic(req, res, next);
 }, (req: any, res: any, next: any) => {
     return tagController.validateTags(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.updateDeck(req, res);
+}, (req: any, res: any, next: any) => {
+    return deckController.updateDeck(req, res, next);
 })
 
 router.put('/decks/:id/publish',(req: any, res: any, next: any) => {
@@ -100,8 +100,8 @@ router.put('/decks/:id/publish',(req: any, res: any, next: any) => {
     return deckController.verifyUnpublished(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardController.getCardsOfDeck(req, res, next);
-}, (req: any, res: any) => {
-    return deckController.publishDeck(req, res);
+}, (req: any, res: any, next: any) => {
+    return deckController.publishDeck(req, res, next);
 })
 
 export{ router };

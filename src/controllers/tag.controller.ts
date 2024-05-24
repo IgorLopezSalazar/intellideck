@@ -14,8 +14,7 @@ export class TagController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -23,18 +22,17 @@ export class TagController {
         Tag.find({name: {$nin: [sanitize(req.body.tags)]}}, "_id")
             .then((data: any) => {
                 if (req.body.tags && req.body.tags.length != data.length) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Some tags could not be found");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     next();
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
-    async getTags(req: any, res: any) {
+    async getTags(req: any, res: any, next: any) {
         Tag.find({})
             .then((data: any) => {
                 if (!data || data.length == 0) {
@@ -44,12 +42,11 @@ export class TagController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
-    async postTag(req: any, res: any) {
+    async postTag(req: any, res: any, next: any) {
         let tag = new Tag({
             name: sanitize(req.params.name)
         })
@@ -58,8 +55,7 @@ export class TagController {
                 res.status(StatusCodes.CREATED).json(data);
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The tag did not exist and could not be created");
-                console.log(e);
+                next(e);
             })
     }
 }

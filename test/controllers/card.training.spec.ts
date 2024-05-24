@@ -191,7 +191,7 @@ describe("Card Training", () => {
 
                 describe("Given user has not card training", () => {
                     describe("Given hide", () => {
-                        it("should return a 400", async () => {
+                        it("should return a 404", async () => {
                             jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                             jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
                             jest.spyOn(CardTraining, "findOneAndUpdate").mockResolvedValueOnce(null);
@@ -200,14 +200,14 @@ describe("Card Training", () => {
                                 await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining/cards/${tempResponsePayload.card}/hide`)
                                     .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                     .then(response => {
-                                        expect(response.status).toEqual(400);
+                                        expect(response.status).toEqual(404);
                                     });
                             });
                         });
                     });
 
                     describe("Given show", () => {
-                        it("should return a 400", async () => {
+                        it("should return a 404", async () => {
                             jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                             jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
                             jest.spyOn(CardTraining, "findOneAndUpdate").mockResolvedValueOnce(null);
@@ -216,7 +216,7 @@ describe("Card Training", () => {
                                 await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining/cards/${tempResponsePayload.card}/show`)
                                     .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                     .then(response => {
-                                        expect(response.status).toEqual(400);
+                                        expect(response.status).toEqual(404);
                                     });
                             });
                         });
@@ -226,30 +226,30 @@ describe("Card Training", () => {
 
             describe("Given user has not deck training", () => {
                 describe("Given hide", () => {
-                    it("should return a 400", async () => {
+                    it("should return a 404", async () => {
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                        jest.spyOn(DeckTraining, "findOne").mockRejectedValueOnce(new Error());
+                        jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(null);
 
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining/cards/${tempResponsePayload.card}/hide`)
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                 .then(response => {
-                                    expect(response.status).toEqual(400);
+                                    expect(response.status).toEqual(404);
                                 });
                         });
                     });
                 });
 
                 describe("Given show", () => {
-                    it("should return a 400", async () => {
+                    it("should return a 404", async () => {
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                        jest.spyOn(DeckTraining, "findOne").mockRejectedValueOnce(new Error());
+                        jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(null);
 
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining/cards/${tempResponsePayload.card}/show`)
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                 .then(response => {
-                                    expect(response.status).toEqual(400);
+                                    expect(response.status).toEqual(404);
                                 });
                         });
                     });

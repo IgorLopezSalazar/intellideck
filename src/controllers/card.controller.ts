@@ -4,7 +4,7 @@ import {Card} from "../models/card.ts";
 import {StatusCodes} from 'http-status-codes';
 
 export class CardController {
-    async postCard(req: any, res: any) {
+    async postCard(req: any, res: any, next: any) {
         let card = new Card({
             question: sanitize(req.body.question),
             answer: sanitize(req.body.answer),
@@ -15,8 +15,7 @@ export class CardController {
             .then((data: any) =>
                 res.status(StatusCodes.CREATED).json(data))
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The card could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -27,8 +26,7 @@ export class CardController {
             req.cards = data;
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -40,7 +38,7 @@ export class CardController {
         }
     }
 
-    async putCard(req: any, res: any) {
+    async putCard(req: any, res: any, next: any) {
         Card.findByIdAndUpdate(sanitize(req.params.cardId), {
             question: sanitize(req.body.question),
             answer: sanitize(req.body.answer),
@@ -48,24 +46,22 @@ export class CardController {
         }, {returnOriginal: false, runValidators: true})
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Card could not be updated");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
-    async deleteCard(req: any, res: any) {
+    async deleteCard(req: any, res: any, next: any) {
         Card.findByIdAndDelete(sanitize(req.params.cardId))
             .then((data: any) =>
                 res.status(StatusCodes.NO_CONTENT).json())
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 }

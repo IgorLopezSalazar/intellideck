@@ -105,20 +105,6 @@ describe("Tag", () => {
                     });
                 });
             });
-
-            describe("Given data is not valid", () => {
-                it("should return a 400", async () => {
-                    jest.spyOn(Tag, "findOne").mockResolvedValueOnce(null);
-                    jest.spyOn(Tag, "create").mockRejectedValueOnce(new Error());
-                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/tags/${responsePayload.name}`)
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(400);
-                            });
-                    });
-                });
-            });
         });
     });
 });

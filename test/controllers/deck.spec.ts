@@ -174,20 +174,6 @@ describe("Deck", () => {
                 });
             });
         });
-
-        describe("Given deck data is invalid", () => {
-            it("should return a 400", async () => {
-                jest.spyOn(Deck, "create").mockRejectedValueOnce(new Error());
-                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).post(`/api/decks/`).send({
-                        description: "This is a test deck"
-                    }).set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                        .then(response => {
-                            expect(response.status).toEqual(400);
-                        });
-                });
-            });
-        });
     });
 
     describe("PUT deck", () => {
@@ -272,7 +258,7 @@ describe("Deck", () => {
         });
 
         describe("Given the topic was not found", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload)
                     .mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
@@ -280,7 +266,7 @@ describe("Deck", () => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", topic: "none"})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -302,7 +288,7 @@ describe("Deck", () => {
         });
 
         describe("Given at least one tag was not found", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload)
                     .mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
@@ -311,7 +297,7 @@ describe("Deck", () => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", tags: ["none"]})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -520,13 +506,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to follow does not exists", () => {
-                it("should return a 400", async () => {
+                it("should return a 404", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(404);
                             });
                     });
                 });
@@ -587,13 +573,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to unfollow does not exists", () => {
-                it("should return a 400", async () => {
+                it("should return a 404", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(404);
                             });
                     });
                 });

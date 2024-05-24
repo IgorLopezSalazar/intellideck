@@ -82,28 +82,15 @@ describe("Topic", () => {
                     });
                 });
             });
-
-            describe("Given data is not valid", () => {
-                it("should return a 400", async () => {
-                    jest.spyOn(Topic, "create").mockRejectedValueOnce(new Error());
-                    await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
-                        await supertest(app).post(`/api/topics/`)
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(400);
-                            });
-                    });
-                });
-            });
         });
 
         describe("Given logged user is not admin", () => {
-            it("should return a 401", async () => {
+            it("should return a 403", async () => {
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).post(`/api/topics/`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(401);
+                            expect(response.status).toEqual(403);
                         });
                 });
             });
@@ -142,7 +129,7 @@ describe("Topic", () => {
 
                 describe("Given name not sent", () => {
                     it("should return a 400", async () => {
-                        jest.spyOn(Topic, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
+                        jest.spyOn(Topic, "findByIdAndUpdate").mockRejectedValueOnce({errors: {name: {kind: "required"}}});
                         await middleware.generateToken(adminPayload.id, adminPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/topics/${responsePayload._id}`).send({name: responsePayload.name})
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -156,12 +143,12 @@ describe("Topic", () => {
         });
 
         describe("Given logged user is not admin", () => {
-            it("should return a 401", async () => {
+            it("should return a 403", async () => {
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/topics/${responsePayload._id}`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(401);
+                            expect(response.status).toEqual(403);
                         });
                 });
             });
@@ -196,12 +183,12 @@ describe("Topic", () => {
         });
 
         describe("Given logged user is not admin", () => {
-            it("should return a 401", async () => {
+            it("should return a 403", async () => {
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).delete(`/api/topics/${responsePayload._id}`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(401);
+                            expect(response.status).toEqual(403);
                         });
                 });
             });

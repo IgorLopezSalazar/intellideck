@@ -13,8 +13,7 @@ export class CardTrainingController {
             req.cards = data;
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -34,8 +33,7 @@ export class CardTrainingController {
             req.cards = data;
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -64,27 +62,25 @@ export class CardTrainingController {
         return CardTraining.create(cardTraining);
     }
 
-    async postCardTrainings(req: any, res: any) {
+    async postCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.postCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.CREATED).json(req.deckTraining);
         }).catch((e: any) => {
-            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be created");
-            console.log(e);
+            next(e);
         });
     }
 
-    async deleteCardTrainings(req: any, res: any) {
+    async deleteCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.deleteCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.NO_CONTENT).json();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -95,15 +91,14 @@ export class CardTrainingController {
         });
     }
 
-    async putCardTrainings(req: any, res: any) {
+    async putCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.putCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.OK).json(req.deckTraining);
         }).catch((e: any) => {
-            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be updated");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -122,7 +117,7 @@ export class CardTrainingController {
             {returnOriginal: false, runValidators: true, omitUndefined: true});
     }
 
-    async showHideCardTraining(req: any, res: any, isShown: any) {
+    async showHideCardTraining(req: any, res: any, next: any, isShown: any) {
         CardTraining.findOneAndUpdate({
                 deckTraining: req.deckTraining._id,
                 card: req.params.cardId
@@ -132,14 +127,13 @@ export class CardTrainingController {
             {returnOriginal: false, runValidators: true, omitUndefined: true})
             .then((data: any) => {
                 if(!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("No card training for specified card");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-                console.log(e);
+                next(e);
             })
     }
 

@@ -3,7 +3,6 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
 export class Middleware {
-
     readPrivateKey() {
         return fs.readFileSync('./private.key', "utf-8");
     }
@@ -26,7 +25,7 @@ export class Middleware {
         if (req.decoded.role == "ADMIN") {
             next();
         } else
-            res.status(StatusCodes.UNAUTHORIZED).json("You do not have permissions");
+            res.status(StatusCodes.FORBIDDEN).json();
     }
 
     async generateToken(id: string, role: string) {
@@ -39,7 +38,6 @@ export class Middleware {
     async tokenProvided(req: any, res: any) {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer')
             return req.headers.authorization.split(' ')[1];
-        else
-            res.status(StatusCodes.BAD_REQUEST).json('No token provided');
+        else res.status(StatusCodes.BAD_REQUEST).json('No token provided');
     }
 }

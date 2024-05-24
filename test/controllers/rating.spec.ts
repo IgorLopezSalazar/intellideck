@@ -61,32 +61,33 @@ describe("Rating", () => {
             });
         });
 
-        describe("Given data is invalid", () => {
-            it("should return a 400", async () => {
-                jest.spyOn(Rating, "create").mockRejectedValueOnce(new Error());
+        describe("Given user has rated the deck", () => {
+            it("should return a 409", async () => {
+                jest.spyOn(Rating, "create").mockRejectedValueOnce({code: 11000});
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).post(`/api/decks/${deckPayload._id}/ratings`)
+                    await supertest(app).post(`/api/decks/${deckPayload._id}/ratings`).send(
+                        {rate: responsePayload[0].rate})
                         .set({
                             Accept: 'application/json',
                             'Content-type': 'application/json',
                             "Authorization": token
                         })
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(409);
                         });
                 });
             });
         });
 
         describe("Given deck is unpublished", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).post(`/api/decks/${deckPayload._id}/ratings`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -119,7 +120,7 @@ describe("Rating", () => {
 
             describe("Given data is not valid", () => {
                 describe("Given data for find is not correct", () => {
-                    it("should return a 400", async () => {
+                    it("should return a 404", async () => {
                         jest.spyOn(Rating, "findOneAndUpdate").mockResolvedValueOnce(null);
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
@@ -130,7 +131,7 @@ describe("Rating", () => {
                                     "Authorization": token
                                 })
                                 .then(response => {
-                                    expect(response.status).toEqual(400);
+                                    expect(response.status).toEqual(404);
                                 });
                         });
                     });
@@ -138,7 +139,7 @@ describe("Rating", () => {
 
                 describe("Given validators failed", () => {
                     it("should return a 400", async () => {
-                        jest.spyOn(Rating, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                        jest.spyOn(Rating, "findOneAndUpdate").mockRejectedValueOnce({errors: {rating: {kind: "user defined"}}});
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/ratings`)
@@ -157,13 +158,13 @@ describe("Rating", () => {
         });
 
         describe("Given deck is unpublished", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/decks/${deckPayload._id}/ratings`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -206,7 +207,7 @@ describe("Rating", () => {
         });
 
         describe("Given deck is unpublished", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).delete(`/api/decks/${deckPayload._id}/ratings`)
@@ -216,7 +217,7 @@ describe("Rating", () => {
                             "Authorization": token
                         })
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });

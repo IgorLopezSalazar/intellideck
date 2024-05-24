@@ -16,8 +16,8 @@ router.put('/decks/:id/deckTraining/cards/:cardId/show',(req: any, res: any, nex
     return deckController.verifyPublished(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckTrainingController.getDeckTraining(req, res, next);
-}, (req: any, res: any) => {
-    return cardTrainingController.showHideCardTraining(req, res, true);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.showHideCardTraining(req, res, next, true);
 })
 
 router.put('/decks/:id/deckTraining/cards/:cardId/hide',(req: any, res: any, next: any) => {
@@ -26,8 +26,8 @@ router.put('/decks/:id/deckTraining/cards/:cardId/hide',(req: any, res: any, nex
     return deckController.verifyPublished(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckTrainingController.getDeckTraining(req, res, next);
-}, (req: any, res: any) => {
-    return cardTrainingController.showHideCardTraining(req, res, false);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.showHideCardTraining(req, res, next, false);
 })
 
 router.get('/decks/:id/deckTraining/cards',(req: any, res: any, next: any) => {
