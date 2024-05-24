@@ -12,6 +12,12 @@ router.get('/users/followed/:id',(req: any, res: any, next: any) => {
     return userController.getFollowedUsers(req, res, next);
 })
 
+router.get('/users/timeline',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.getPaginatedUsers(req, res, next);
+})
+
 router.get('/users/filter',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {

@@ -1,7 +1,6 @@
 import {StatusCodes} from 'http-status-codes';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
-
 export class Middleware {
     readPrivateKey() {
         return fs.readFileSync('./private.key', "utf-8");

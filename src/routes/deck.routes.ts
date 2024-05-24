@@ -24,6 +24,12 @@ router.post('/decks',(req: any, res: any, next: any) => {
     return deckController.postDeck(req, res, next);
 })
 
+router.get('/decks/timeline',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.getPaginatedDecks(req, res, next);
+})
+
 router.get('/decks/filter',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {

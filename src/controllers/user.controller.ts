@@ -11,6 +11,7 @@ import mongoose from 'mongoose';
 import {Helper} from "../helper.ts";
 
 const SALT_ROUNDS: number = 10;
+const USER_TIMELINE_SIZE: number = 5;
 const middleware: Middleware = new Middleware();
 
 export class UserController {
@@ -27,6 +28,21 @@ export class UserController {
             .catch((e: any) => {
                 next(e);
             });
+    }
+
+    async getPaginatedUsers(req: any, res: any, next: any) {
+        User.find({}, null,
+            {limit: USER_TIMELINE_SIZE, sort: {username: 'asc'}})
+            .then((data: any) =>{
+                if(!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
     }
 
     async postUser(req: any, res: any, next: any) {

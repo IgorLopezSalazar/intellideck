@@ -4,7 +4,23 @@ import {Deck} from "../models/deck.ts";
 import {StatusCodes} from 'http-status-codes';
 import {Helper} from "../helper.ts";
 
+const PAGINATION_SIZE: number = 20;
 export class DeckController {
+    async getPaginatedDecks(req: any, res: any, next: any) {
+        Deck.find({}, null,
+            {skip: PAGINATION_SIZE * req.query.page, limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
+            .then((data: any) =>{
+                if(!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
+
     async postDeck(req: any, res: any, next: any) {
         let deck = new Deck({
             title: sanitize(req.body.title),
