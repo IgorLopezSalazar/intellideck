@@ -56,6 +56,16 @@ router.get('/decks/:id',(req: any, res: any, next: any) => {
     return deckController.getUserDecks(req, res, next);
 })
 
+router.post('/decks/:id/copy',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.copyDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardController.getCardsOfDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardController.copyCards(req, res, next);
+})
+
 router.put('/decks/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {

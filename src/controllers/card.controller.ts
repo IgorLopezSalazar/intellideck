@@ -16,7 +16,22 @@ export class CardController {
                 res.status(StatusCodes.CREATED).json(data))
             .catch((e: any) => {
                 next(e);
-            })
+            });
+    }
+
+    async copyCards(req: any, res: any, next: any) {
+        let allPromises = req.cards.map((card: any) => {
+            let cardNew = card.toObject();
+            delete cardNew._id;
+            cardNew.deck = req.deck._id;
+            return Card.create(cardNew);
+        });
+
+        Promise.all(allPromises).then((data: any) => {
+            res.status(StatusCodes.OK).json(req.deck);
+        }).catch((e: any) => {
+            next(e);
+        });
     }
 
     async getCardsOfDeck(req: any, res: any, next: any) {

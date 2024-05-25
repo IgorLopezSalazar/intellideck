@@ -37,6 +37,33 @@ export class DeckController {
             })
     }
 
+    async copyDeck(req: any, res: any, next: any) {
+        Deck.findById(req.params.id)
+            .then((data: any) => {
+            if (!data) {
+                res.status(StatusCodes.NOT_FOUND).json();
+            } else {
+                let deck = data.toObject();
+                delete deck._id;
+                delete deck.publishDate;
+                delete deck.avgDeckRating;
+                deck.isPublished = false;
+                deck.creator = req.decoded._id;
+
+                Deck.create(deck)
+                    .then((data2: any) =>{
+                        req.deck = data2;
+                        next();
+                    })
+                    .catch((e: any) => {
+                        next(e);
+                    })
+            }
+        }).catch((e: any) => {
+            next(e);
+        });
+    }
+
     async getUserDecks(req: any, res: any, next: any) {
         Deck.find({
             creator: sanitize(req.params.id),
