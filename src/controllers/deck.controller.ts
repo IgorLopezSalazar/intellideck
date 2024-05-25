@@ -156,12 +156,19 @@ export class DeckController {
         if (req.cards.length == 0) {
             res.status(StatusCodes.BAD_REQUEST).json("Cannot publish a deck without cards");
         } else {
-            Deck.findByIdAndUpdate(sanitize(req.params.id), {
+            Deck.findOneAndUpdate({
+                _id: sanitize(req.params.id),
+                topic: {$exists: true}
+            }, {
                 isPublished: true,
                 publishDate: new Date()
             }, {returnOriginal: false, runValidators: true})
                 .then((data: any) => {
-                    res.status(StatusCodes.OK).json(data);
+                    if(!data) {
+                        res.status(StatusCodes.NOT_FOUND).json();
+                    } else {
+                        res.status(StatusCodes.OK).json(data);
+                    }
                 })
                 .catch((e: any) => {
                     next(e);
