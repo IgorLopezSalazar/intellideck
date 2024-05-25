@@ -8,8 +8,10 @@ const PAGINATION_SIZE: number = 20;
 
 export class DeckController {
     async getPaginatedDecks(req: any, res: any, next: any) {
+        let page = (!req.query.page)? 0: req.query.page;
         Deck.find({}, null,
-            {skip: PAGINATION_SIZE * req.query.page, limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
+            {skip: PAGINATION_SIZE * page,
+                limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
             .then((data: any) => {
                 if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
@@ -39,7 +41,7 @@ export class DeckController {
     }
 
     async copyDeck(req: any, res: any, next: any) {
-        Deck.findById(req.params.id)
+        Deck.findById(sanitize(req.params.id))
             .then((data: any) => {
                 let deck = data.toObject();
                 delete deck._id;
@@ -295,7 +297,7 @@ export class DeckController {
     }
 
     async deleteDeck(req: any, res: any, next: any) {
-        Deck.findById(req.params.id)
+        Deck.findById(sanitize(req.params.id))
             .then((data: any) => {
                 if (req.decoded.role == "USER" && data && data.isPublished == true) {
                     Deck.findByIdAndUpdate(req.params.id, {$unset: {creator: 1}})

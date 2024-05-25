@@ -596,6 +596,48 @@ describe("User", () => {
             });
         });
 
+        describe("GET Users for timeline", () => {
+            describe("Given users are found", () => {
+                it("should return a 200 and the users", async () => {
+                    jest.spyOn(User, "find").mockResolvedValueOnce([responsePayload]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/timeline`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                            });
+                    });
+                });
+            });
+
+            describe("Given no users are found", () => {
+                it("should return a 204", async () => {
+                    jest.spyOn(User, "find").mockResolvedValueOnce([]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/timeline`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given an error occurs", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(User, "find").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/users/timeline`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+        });
+
         describe("Given user is not followed", () => {
             describe("Given user is logged", () => {
                 describe("Given user to unfollow exists", () => {
