@@ -50,6 +50,14 @@ router.get('/decks/today',(req: any, res: any, next: any) => {
     return deckController.getDecksForToday(req, res, next);
 })
 
+router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.getDecksFollowed(req, res, next);
+}, (req: any, res: any) => {
+    return userController.validateDecksFollowed(req, res);
+})
+
 router.get('/decks/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
@@ -59,6 +67,8 @@ router.get('/decks/:id',(req: any, res: any, next: any) => {
 router.post('/decks/:id/copy',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
+    return deckController.verifyPublished(req, res, next);
+}, (req: any, res: any, next: any) => {
     return deckController.copyDeck(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardController.getCardsOfDeck(req, res, next);
@@ -66,7 +76,7 @@ router.post('/decks/:id/copy',(req: any, res: any, next: any) => {
     return cardController.copyCards(req, res, next);
 })
 
-router.put('/decks/follow',(req: any, res: any, next: any) => {
+router.put('/decks/:id/follow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
@@ -76,7 +86,7 @@ router.put('/decks/follow',(req: any, res: any, next: any) => {
     return userController.validateFollowUnfollow(req, res);
 })
 
-router.put('/decks/unfollow',(req: any, res: any, next: any) => {
+router.put('/decks/:id/unfollow',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 },(req: any, res: any, next: any) => {
     return deckController.verifyPublished(req, res, next);
@@ -84,14 +94,6 @@ router.put('/decks/unfollow',(req: any, res: any, next: any) => {
     return userController.putUnfollowDeck(req, res, next);
 }, (req: any, res: any) => {
     return userController.validateFollowUnfollow(req, res);
-})
-
-router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
-    return middleware.isAuthenticated(req, res, next);
-}, (req: any, res: any, next: any) => {
-    return userController.getDecksFollowed(req, res, next);
-}, (req: any, res: any) => {
-    return userController.validateDecksFollowed(req, res);
 })
 
 router.put('/decks/:id',(req: any, res: any, next: any) => {

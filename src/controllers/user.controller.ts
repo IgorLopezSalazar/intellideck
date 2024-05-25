@@ -118,18 +118,18 @@ export class UserController {
     async genericFollow(req: any, collection: string) {
         return User.findOneAndUpdate({
                 _id: req.decoded._id,
-                [collection]: {$nin: [sanitize(req.body.id)]}
+                [collection]: {$nin: [sanitize(req.params.id)]}
             },
-            {"$push": {[collection]: sanitize(req.body.id)}},
+            {"$push": {[collection]: sanitize(req.params.id)}},
             {returnOriginal: false, runValidators: true});
     }
 
     async genericUnfollow(req: any, collection: string) {
         return User.findOneAndUpdate({
                 _id: req.decoded._id,
-                [collection]: {$in: [sanitize(req.body.id)]}
+                [collection]: {$in: [sanitize(req.params.id)]}
             },
-            {"$pull": {[collection]: sanitize(req.body.id)}},
+            {"$pull": {[collection]: sanitize(req.params.id)}},
             {returnOriginal: false, runValidators: true});
     }
 

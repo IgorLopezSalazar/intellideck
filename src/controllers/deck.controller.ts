@@ -5,12 +5,13 @@ import {StatusCodes} from 'http-status-codes';
 import {Helper} from "../helper.ts";
 
 const PAGINATION_SIZE: number = 20;
+
 export class DeckController {
     async getPaginatedDecks(req: any, res: any, next: any) {
         Deck.find({}, null,
             {skip: PAGINATION_SIZE * req.query.page, limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
-            .then((data: any) =>{
-                if(!data || data.length == 0) {
+            .then((data: any) => {
+                if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
@@ -40,9 +41,6 @@ export class DeckController {
     async copyDeck(req: any, res: any, next: any) {
         Deck.findById(req.params.id)
             .then((data: any) => {
-            if (!data) {
-                res.status(StatusCodes.NOT_FOUND).json();
-            } else {
                 let deck = data.toObject();
                 delete deck._id;
                 delete deck.publishDate;
@@ -51,15 +49,14 @@ export class DeckController {
                 deck.creator = req.decoded._id;
 
                 Deck.create(deck)
-                    .then((data2: any) =>{
+                    .then((data2: any) => {
                         req.deck = data2;
                         next();
                     })
                     .catch((e: any) => {
                         next(e);
                     })
-            }
-        }).catch((e: any) => {
+            }).catch((e: any) => {
             next(e);
         });
     }
@@ -81,10 +78,7 @@ export class DeckController {
 
     async verifyPublished(req: any, res: any, next: any) {
         Deck.findOne({
-            $or: [
-                {_id: sanitize(req.body.id)},
-                {_id: sanitize(req.params.id)}
-            ],
+            _id: sanitize(req.params.id),
             isPublished: true
         }).then((data: any) => {
             if (!data) {
@@ -201,8 +195,8 @@ export class DeckController {
                     $and: [
                         {title: {$regex: (req.query.title) ? sanitize(req.query.title) : ""}},
                         {isPublished: true},
-                        {publishDate: {$gte: (Number.isNaN(date.valueOf()))? new Date(0) : date}},
-                        {avgDeckRating: {$gte: (req.query.avgDeckRating)? sanitize(Number.parseInt(req.query.avgDeckRating)): 0}}
+                        {publishDate: {$gte: (Number.isNaN(date.valueOf())) ? new Date(0) : date}},
+                        {avgDeckRating: {$gte: (req.query.avgDeckRating) ? sanitize(Number.parseInt(req.query.avgDeckRating)) : 0}}
                     ]
                 }
             },
@@ -260,18 +254,17 @@ export class DeckController {
             {
                 $match: {
                     $and: [
-                        {$expr: {$ne:["$topic", []]}},
-                        {$expr: {$ne:["$tags", []]}},
-                        {$expr: {$ne:["$creator", []]}}
+                        {$expr: {$ne: ["$topic", []]}},
+                        {$expr: {$ne: ["$tags", []]}},
+                        {$expr: {$ne: ["$creator", []]}}
                     ]
                 }
             },
         ])
             .then((data: any) => {
-                if(!data || data.length == 0) {
+                if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
-                }
-                else {
+                } else {
                     req.decks = data;
                     next();
                 }
