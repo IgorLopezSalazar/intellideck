@@ -79,4 +79,14 @@ export class CardController {
                 next(e);
             })
     }
+
+    async deleteCards(req: any, res: any, next: any) {
+        Card.deleteMany({deck: req.deck._id})
+            .then((data: any) => {
+                next();
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
 }

@@ -19,15 +19,15 @@ export class CardTrainingController {
 
     async getCardTrainingsForToday(req: any, res: any, next: any) {
         let today = new Date();
-        let day = (today.getDate() < 10)? "0" + today.getDate() : today.getDate();
-        let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth() + 1;
+        let day = (today.getDate() < 10) ? "0" + today.getDate() : today.getDate();
+        let month = (today.getMonth() + 1 < 10) ? "0" + (today.getMonth() + 1) : today.getMonth() + 1;
         let lowerDate = new Date(today.getFullYear() + "-" + month + "-" + day);
-        let deckTrainingIds = (!req.deckTrainings)? [] : req.deckTrainings.map((dt: any) => dt._id);
-        deckTrainingIds.push((!req.deckTraining)? undefined : req.deckTraining._id);
+        let deckTrainingIds = (!req.deckTrainings) ? [] : req.deckTrainings.map((dt: any) => dt._id);
+        deckTrainingIds.push((!req.deckTraining) ? undefined : req.deckTraining._id);
 
         CardTraining.find({
             deckTraining: {$in: deckTrainingIds},
-            nextTraining: { "$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1) },
+            nextTraining: {"$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1)},
             isShown: true
         }).then((data: any) => {
             req.cards = data;
@@ -71,6 +71,17 @@ export class CardTrainingController {
         }).catch((e: any) => {
             next(e);
         });
+    }
+
+    async deleteCardTrainingsDeckDeletion(req: any, res: any, next: any) {
+        let deckTrainingIds = (!req.deckTrainings) ? [] : req.deckTrainings.map((dt: any) => dt._id);
+        CardTraining.deleteMany({deckTraining: {$in: deckTrainingIds}})
+            .then((data: any) => {
+                res.status(StatusCodes.NO_CONTENT).json();
+            })
+            .catch((e: any) => {
+                next(e);
+            });
     }
 
     async deleteCardTrainings(req: any, res: any, next: any) {
@@ -126,7 +137,7 @@ export class CardTrainingController {
             },
             {returnOriginal: false, runValidators: true, omitUndefined: true})
             .then((data: any) => {
-                if(!data) {
+                if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);

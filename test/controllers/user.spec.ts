@@ -469,7 +469,7 @@ describe("User", () => {
             it("should return a 500", async () => {
                 jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/users/follow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(500);
@@ -494,7 +494,7 @@ describe("User", () => {
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
                         jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(followingPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                            await supertest(app).put(`/api/users/follow`).send({id: responsePayload._id})
+                            await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(200);
@@ -509,7 +509,7 @@ describe("User", () => {
 
             describe("Given user is not logged", () => {
                 it("should return a 401 unauthorized", async () => {
-                    await supertest(app).put(`/api/users/follow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                         .set({"Authorization": invalidToken, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(401);
@@ -530,7 +530,7 @@ describe("User", () => {
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
                         jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                            await supertest(app).put(`/api/users/follow`).send({id: responsePayload._id})
+                            await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(400);
@@ -547,7 +547,7 @@ describe("User", () => {
             it("should return a 500", async () => {
                 jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/users/unfollow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(500);
@@ -573,7 +573,7 @@ describe("User", () => {
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
                         jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(unfollowingPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                            await supertest(app).put(`/api/users/unfollow`).send({id: responsePayload._id})
+                            await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(200);
@@ -587,7 +587,7 @@ describe("User", () => {
 
             describe("Given user is not logged", () => {
                 it("should return a 401 unauthorized", async () => {
-                    await supertest(app).put(`/api/users/unfollow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                         .set({"Authorization": invalidToken, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(401);
@@ -609,7 +609,7 @@ describe("User", () => {
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
                         jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                            await supertest(app).put(`/api/users/unfollow`).send({id: responsePayload._id})
+                            await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
                                 .then(response => {
                                     expect(response.status).toEqual(400);

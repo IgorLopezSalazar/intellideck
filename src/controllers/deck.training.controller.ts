@@ -39,6 +39,25 @@ export class DeckTrainingController {
             })
     }
 
+    async deleteDeckTrainings(req: any, res: any, next: any) {
+        DeckTraining.find({deck: req.deck._id})
+            .then((data: any) => {
+                req.deckTrainings = data;
+                DeckTraining.deleteMany({
+                    deck: req.deck._id
+                })
+                    .then((data: any) => {
+                        next();
+                    })
+                    .catch((e: any) => {
+                        next(e);
+                    })
+            })
+            .catch((e: any) => {
+                next(e);
+            });
+    }
+
     async getDeckTraining(req: any, res: any, next: any) {
         DeckTraining.findOne({
             user: req.decoded._id,

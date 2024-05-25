@@ -286,4 +286,31 @@ export class DeckController {
             res.status(StatusCodes.OK).json(req.decks);
         }
     }
+
+    async deleteDeck(req: any, res: any, next: any) {
+        Deck.findById(req.params.id)
+            .then((data: any) => {
+                if (req.decoded.role == "USER" && data && data.isPublished == true) {
+                    Deck.findByIdAndUpdate(req.params.id, {$unset: {creator: 1}})
+                        .then((data: any) => {
+                            res.status(StatusCodes.OK).json();
+                        })
+                        .catch((e: any) => {
+                            next(e);
+                        });
+                } else {
+                    Deck.findByIdAndDelete(req.params.id)
+                        .then((data2: any) => {
+                            req.deck = data2;
+                            next();
+                        })
+                        .catch((e: any) => {
+                            next(e);
+                        });
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            });
+    }
 }

@@ -64,6 +64,20 @@ router.get('/decks/:id',(req: any, res: any, next: any) => {
     return deckController.getUserDecks(req, res, next);
 })
 
+router.delete('/decks/:id',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.verifyCreator(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.deleteDeck(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardController.deleteCards(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckTrainingController.deleteDeckTrainings(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.deleteCardTrainingsDeckDeletion(req, res, next);
+})
+
 router.post('/decks/:id/copy',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
