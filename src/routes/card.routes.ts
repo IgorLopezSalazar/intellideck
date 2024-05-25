@@ -14,8 +14,8 @@ router.post('/decks/:id/cards',(req: any, res: any, next: any) => {
     return deckController.verifyCreator(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyUnpublished(req, res, next);
-}, (req: any, res: any) => {
-    return cardController.postCard(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardController.postCard(req, res, next);
 })
 
 router.get('/decks/:id/cards',(req: any, res: any, next: any) => {
@@ -32,8 +32,8 @@ router.put('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {
     return deckController.verifyCreator(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyUnpublished(req, res, next);
-}, (req: any, res: any) => {
-    return cardController.putCard(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardController.putCard(req, res, next);
 })
 
 router.delete('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {
@@ -42,8 +42,8 @@ router.delete('/decks/:id/cards/:cardId',(req: any, res: any, next: any) => {
     return deckController.verifyCreator(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.verifyUnpublished(req, res, next);
-}, (req: any, res: any) => {
-    return cardController.deleteCard(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardController.deleteCard(req, res, next);
 })
 
 export{ router };

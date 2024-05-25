@@ -73,28 +73,28 @@ describe("Deck training", () => {
         });
 
         describe("Given user has not started to study the deck", () => {
-            it("should return a 204", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(null);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(204);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
         });
 
         describe("Given catch during search of deck training occurs", () => {
-            it("should return a 400", async () => {
+            it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(500);
                         });
                 });
             });
@@ -152,22 +152,22 @@ describe("Deck training", () => {
         });
 
         describe("Given user has previous deck training", () => {
-            it("should return a 400", async () => {
+            it("should return a 409", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                jest.spyOn(DeckTraining, "create").mockRejectedValueOnce(new Error());
+                jest.spyOn(DeckTraining, "create").mockRejectedValueOnce({code: 11000});
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).post(`/api/decks/${deckPayload._id}/deckTraining`).send(
                         {boxAmount: tempResponsePayload.boxAmount, backtrack: tempResponsePayload.backtrack})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(409);
                         });
                 });
             });
         });
 
         describe("Given error while creating card training", () => {
-            it("should return a 400", async () => {
+            it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "create")
                     .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
@@ -181,7 +181,7 @@ describe("Deck training", () => {
                             cards: [{id: cardTrainingPayload._id, isShown: cardTrainingPayload.isShown}]})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(500);
                         });
                 });
             });
@@ -270,10 +270,10 @@ describe("Deck training", () => {
                 describe("Given deck id badly formatted", ()=> {
                     it("should return a 400", async () => {
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
-                        jest.spyOn(DeckTraining, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                        jest.spyOn(DeckTraining, "findOneAndUpdate").mockRejectedValueOnce({errors: {box: {kind: "user defined"}}});
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining`).send(
-                                {resetDate: true, cards: [{id: cardPayload._id, box: 5}]})
+                                {resetDate: true, cards: [{id: cardPayload._id, box: 5.5}]})
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                 .then(response => {
                                     expect(response.status).toEqual(400);
@@ -289,7 +289,7 @@ describe("Deck training", () => {
                             .mockResolvedValueOnce({...dateDeckTrainingPayload, ...tempResponsePayload})
                             .mockResolvedValueOnce({...dateDeckTrainingPayload, ...tempResponsePayload});
                         jest.spyOn(CardTraining, "find").mockResolvedValueOnce([cardTrainingPayload]);
-                        jest.spyOn(CardTraining, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                        jest.spyOn(CardTraining, "findOneAndUpdate").mockRejectedValueOnce({errors: {box: {kind: "min"}}});
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining`).send(
                                 {completionTimeSeconds: 300, cards: [{id: cardPayload._id, box: 12}]})
@@ -320,7 +320,7 @@ describe("Deck training", () => {
         });
 
         describe("Given error when querying database", () => {
-            it("should return a 400", async () => {
+            it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOneAndUpdate")
                     .mockResolvedValueOnce({...dateDeckTrainingPayload, ...tempResponsePayload})
@@ -330,7 +330,7 @@ describe("Deck training", () => {
                         {completionTimeSeconds: 300, cards: [{id: cardPayload._id, box: 5}]})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(500);
                         });
                 });
             });

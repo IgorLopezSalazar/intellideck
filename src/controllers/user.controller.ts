@@ -11,10 +11,11 @@ import mongoose from 'mongoose';
 import {Helper} from "../helper.ts";
 
 const SALT_ROUNDS: number = 10;
+const USER_TIMELINE_SIZE: number = 5;
 const middleware: Middleware = new Middleware();
 
 export class UserController {
-    async getFollowedUsers(req: any, res: any) {
+    async getFollowedUsers(req: any, res: any, next: any) {
         User.findById(sanitize(req.params.id), 'followedUsers')
             .populate("followedUsers").exec()
             .then((data: any) => {
@@ -23,10 +24,28 @@ export class UserController {
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
+            })
+            .catch((e: any) => {
+                next(e);
             });
     }
 
-    async postUser(req: any, res: any) {
+    async getPaginatedUsers(req: any, res: any, next: any) {
+        User.find({}, null,
+            {limit: USER_TIMELINE_SIZE, sort: {username: 'asc'}})
+            .then((data: any) =>{
+                if(!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
+
+    async postUser(req: any, res: any, next: any) {
         if (!req.body.password) {
             res.status(StatusCodes.BAD_REQUEST).json("Password missing");
         } else {
@@ -43,35 +62,33 @@ export class UserController {
                 .then((data: any) =>
                     res.status(StatusCodes.CREATED).json(data))
                 .catch((e: any) => {
-                    res.status(StatusCodes.CONFLICT).json("A user with the same email or username already exists");
-                    console.log(e);
+                    next(e);
                 })
         }
     }
 
-    async getUser(req: any, res: any) {
+    async getUser(req: any, res: any, next: any) {
         User.findById(req.params.id)
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.NOT_FOUND).json("No result found");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
-            .catch((e: any) =>
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred, please try again later."));
+            .catch((e: any) => next(e));
     }
 
-    async login(req: any, res: any) {
+    async login(req: any, res: any, next: any) {
         User.findOne({username: sanitize(req.body.username)})
             .then((user: any) => {
                 if (!user) {
-                    res.status(StatusCodes.UNAUTHORIZED).json("Authentication failed");
+                    res.status(StatusCodes.UNAUTHORIZED).json();
                 } else {
                     compare(req.body.password, user.password)
                         .then((match: boolean) => {
                             if (!match) {
-                                res.status(StatusCodes.UNAUTHORIZED).json("Authentication failed");
+                                res.status(StatusCodes.UNAUTHORIZED).json();
                             } else {
                                 middleware.generateToken(user._id, user.role).then((token: any) => {
                                     res.status(StatusCodes.OK).json(token);
@@ -81,8 +98,7 @@ export class UserController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while processing the login. Please try again later");
-                console.log(e);
+                next(e);
             });
 
     }
@@ -95,26 +111,25 @@ export class UserController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
     async genericFollow(req: any, collection: string) {
         return User.findOneAndUpdate({
                 _id: req.decoded._id,
-                [collection]: {$nin: [sanitize(req.body.id)]}
+                [collection]: {$nin: [sanitize(req.params.id)]}
             },
-            {"$push": {[collection]: sanitize(req.body.id)}},
+            {"$push": {[collection]: sanitize(req.params.id)}},
             {returnOriginal: false, runValidators: true});
     }
 
     async genericUnfollow(req: any, collection: string) {
         return User.findOneAndUpdate({
                 _id: req.decoded._id,
-                [collection]: {$in: [sanitize(req.body.id)]}
+                [collection]: {$in: [sanitize(req.params.id)]}
             },
-            {"$pull": {[collection]: sanitize(req.body.id)}},
+            {"$pull": {[collection]: sanitize(req.params.id)}},
             {returnOriginal: false, runValidators: true});
     }
 
@@ -125,12 +140,11 @@ export class UserController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
-    async getFollowers(req: any, res: any) {
+    async getFollowers(req: any, res: any, next: any) {
         User.find({"followedUsers": {$in: [sanitize(req.params.id)]}})
             .then((data: any) => {
                 if (data.length == 0) {
@@ -138,6 +152,9 @@ export class UserController {
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
+            })
+            .catch((e: any) => {
+                next(e);
             });
     }
 
@@ -158,8 +175,7 @@ export class UserController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
@@ -198,8 +214,7 @@ export class UserController {
                     }
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                    console.log(e);
+                    next(e);
                 });
         } else {
             next();
@@ -228,8 +243,7 @@ export class UserController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
@@ -240,29 +254,27 @@ export class UserController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
     async validateFollowUnfollow(req: any, res: any) {
         if (!req.followUnfollowData) {
-            res.status(StatusCodes.BAD_REQUEST).json("The requested action could not be done");
+            res.status(StatusCodes.BAD_REQUEST).json();
         } else {
             res.status(StatusCodes.OK).json(req.followUnfollowData);
         }
     }
 
     async getDecksFollowed(req: any, res: any, next: any) {
-        User.findById((req.params.id)?sanitize(req.params.id):req.decoded._id, 'followedDecks')
+        User.findById((req.params.id) ? sanitize(req.params.id) : req.decoded._id, 'followedDecks')
             .populate("followedDecks").exec()
             .then((data: any) => {
                 req.userDecksFollowed = data;
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-                console.log(e);
+                next(e);
             });
     }
 
@@ -274,7 +286,7 @@ export class UserController {
         }
     }
 
-    async updateUser(req: any, res: any) {
+    async updateUser(req: any, res: any, next: any) {
         User.findByIdAndUpdate(req.decoded._id,
             {
                 name: sanitize(req.body.name),
@@ -284,11 +296,15 @@ export class UserController {
                 profilePicture: sanitize(req.body.profilePicture)
             },
             {returnOriginal: false, runValidators: true})
-            .then((data: any) =>
-                res.status(StatusCodes.OK).json(data))
+            .then((data: any) =>{
+                if(!data) {
+                    res.status(StatusCodes.NOT_FOUND).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
             .catch((e: any) => {
-                res.status(StatusCodes.CONFLICT).json("Email or username already in use");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -310,8 +326,7 @@ export class UserController {
                     });
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while processing the login. Please try again later");
-                    console.log(e);
+                    next(e);
                 });
         }
     }

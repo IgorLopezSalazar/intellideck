@@ -16,8 +16,7 @@ export class RatingController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The rating could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -44,8 +43,7 @@ export class RatingController {
             }
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -67,15 +65,14 @@ export class RatingController {
         })
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("Rating could not be updated");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     req.rating = data;
                     next();
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The rating could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -86,8 +83,7 @@ export class RatingController {
         })
             .then((data: any) => next())
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 }

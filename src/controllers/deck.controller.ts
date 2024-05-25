@@ -4,8 +4,27 @@ import {Deck} from "../models/deck.ts";
 import {StatusCodes} from 'http-status-codes';
 import {Helper} from "../helper.ts";
 
+const PAGINATION_SIZE: number = 20;
+
 export class DeckController {
-    async postDeck(req: any, res: any) {
+    async getPaginatedDecks(req: any, res: any, next: any) {
+        let page = (!req.query.page)? 0: req.query.page;
+        Deck.find({}, null,
+            {skip: PAGINATION_SIZE * page,
+                limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
+            .then((data: any) => {
+                if (!data || data.length == 0) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
+
+    async postDeck(req: any, res: any, next: any) {
         let deck = new Deck({
             title: sanitize(req.body.title),
             description: sanitize(req.body.description),
@@ -17,12 +36,34 @@ export class DeckController {
             .then((data: any) =>
                 res.status(StatusCodes.CREATED).json(data))
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The deck could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
-    async getUserDecks(req: any, res: any) {
+    async copyDeck(req: any, res: any, next: any) {
+        Deck.findById(sanitize(req.params.id))
+            .then((data: any) => {
+                let deck = data.toObject();
+                delete deck._id;
+                delete deck.publishDate;
+                delete deck.avgDeckRating;
+                deck.isPublished = false;
+                deck.creator = req.decoded._id;
+
+                Deck.create(deck)
+                    .then((data2: any) => {
+                        req.deck = data2;
+                        next();
+                    })
+                    .catch((e: any) => {
+                        next(e);
+                    })
+            }).catch((e: any) => {
+            next(e);
+        });
+    }
+
+    async getUserDecks(req: any, res: any, next: any) {
         Deck.find({
             creator: sanitize(req.params.id),
             isPublished: true
@@ -32,29 +73,27 @@ export class DeckController {
             } else {
                 res.status(StatusCodes.OK).json(data);
             }
+        }).catch((e: any) => {
+            next(e);
         });
     }
 
     async verifyPublished(req: any, res: any, next: any) {
         Deck.findOne({
-            $or: [
-                {_id: sanitize(req.body.id)},
-                {_id: sanitize(req.params.id)}
-            ],
+            _id: sanitize(req.params.id),
             isPublished: true
         }).then((data: any) => {
             if (!data) {
-                res.status(StatusCodes.BAD_REQUEST).json("The specified deck is not published");
+                res.status(StatusCodes.NOT_FOUND).json();
             } else {
                 next();
             }
         }).catch((e: any) => {
-            res.status(StatusCodes.NOT_FOUND).json("The deck could not be found");
-            console.log(e);
+            next(e);
         });
     }
 
-    async updateDeck(req: any, res: any) {
+    async updateDeck(req: any, res: any, next: any) {
         Deck.findByIdAndUpdate(sanitize(req.params.id), {
             title: sanitize(req.body.title),
             description: sanitize(req.body.description),
@@ -69,8 +108,7 @@ export class DeckController {
                 res.status(StatusCodes.OK).json(data);
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -82,8 +120,7 @@ export class DeckController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -98,8 +135,7 @@ export class DeckController {
                 next();
             }
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         })
     }
 
@@ -114,30 +150,35 @@ export class DeckController {
                 next();
             }
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         })
     }
 
-    async publishDeck(req: any, res: any) {
+    async publishDeck(req: any, res: any, next: any) {
         if (req.cards.length == 0) {
             res.status(StatusCodes.BAD_REQUEST).json("Cannot publish a deck without cards");
         } else {
-            Deck.findByIdAndUpdate(sanitize(req.params.id), {
+            Deck.findOneAndUpdate({
+                _id: sanitize(req.params.id),
+                topic: {$exists: true}
+            }, {
                 isPublished: true,
                 publishDate: new Date()
             }, {returnOriginal: false, runValidators: true})
                 .then((data: any) => {
-                    res.status(StatusCodes.OK).json(data);
+                    if(!data) {
+                        res.status(StatusCodes.NOT_FOUND).json();
+                    } else {
+                        res.status(StatusCodes.OK).json(data);
+                    }
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while publishing");
-                    console.log(e);
+                    next(e);
                 })
         }
     }
 
-    async getDecksForToday(req: any, res: any) {
+    async getDecksForToday(req: any, res: any, next: any) {
         if (req.cards.length == 0) {
             res.status(StatusCodes.NO_CONTENT).json();
         } else {
@@ -150,8 +191,7 @@ export class DeckController {
                     res.status(StatusCodes.OK).json(data);
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error");
-                    console.log(e);
+                    next(e);
                 })
         }
     }
@@ -164,8 +204,8 @@ export class DeckController {
                     $and: [
                         {title: {$regex: (req.query.title) ? sanitize(req.query.title) : ""}},
                         {isPublished: true},
-                        {publishDate: {$gte: (Number.isNaN(date.valueOf()))? new Date(0) : date}},
-                        {avgDeckRating: {$gte: (req.query.avgDeckRating)? sanitize(Number.parseInt(req.query.avgDeckRating)): 0}}
+                        {publishDate: {$gte: (Number.isNaN(date.valueOf())) ? new Date(0) : date}},
+                        {avgDeckRating: {$gte: (req.query.avgDeckRating) ? sanitize(Number.parseInt(req.query.avgDeckRating)) : 0}}
                     ]
                 }
             },
@@ -223,25 +263,23 @@ export class DeckController {
             {
                 $match: {
                     $and: [
-                        {$expr: {$ne:["$topic", []]}},
-                        {$expr: {$ne:["$tags", []]}},
-                        {$expr: {$ne:["$creator", []]}}
+                        {$expr: {$ne: ["$topic", []]}},
+                        {$expr: {$ne: ["$tags", []]}},
+                        {$expr: {$ne: ["$creator", []]}}
                     ]
                 }
             },
         ])
             .then((data: any) => {
-                if(!data || data.length == 0) {
+                if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
-                }
-                else {
+                } else {
                     req.decks = data;
                     next();
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error processing your request. Try again later");
-                console.log(e);
+                next(e);
             });
     }
 
@@ -256,5 +294,32 @@ export class DeckController {
         } else {
             res.status(StatusCodes.OK).json(req.decks);
         }
+    }
+
+    async deleteDeck(req: any, res: any, next: any) {
+        Deck.findById(sanitize(req.params.id))
+            .then((data: any) => {
+                if (req.decoded.role == "USER" && data && data.isPublished == true) {
+                    Deck.findByIdAndUpdate(req.params.id, {$unset: {creator: 1}})
+                        .then((data: any) => {
+                            res.status(StatusCodes.OK).json();
+                        })
+                        .catch((e: any) => {
+                            next(e);
+                        });
+                } else {
+                    Deck.findByIdAndDelete(req.params.id)
+                        .then((data2: any) => {
+                            req.deck = data2;
+                            next();
+                        })
+                        .catch((e: any) => {
+                            next(e);
+                        });
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            });
     }
 }

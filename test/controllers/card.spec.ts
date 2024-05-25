@@ -92,16 +92,17 @@ describe("Card", () => {
                 });
             });
 
-            describe("Given data is not valid", () => {
-                it("should return a 400", async () => {
+            describe("Given Internal Error occurs", () => {
+                it("should return a 500", async () => {
                     jest.spyOn(Card, "create").mockRejectedValueOnce(new Error());
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload)
                         .mockResolvedValueOnce(deckPayload);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).post(`/api/decks/${deckPayload._id}/cards`)
+                        await supertest(app).post(`/api/decks/${deckPayload._id}/cards`).send(
+                            {question: responsePayload.question, answer: responsePayload.answer})
                             .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(500);
                             });
                     });
                 });
@@ -156,7 +157,7 @@ describe("Card", () => {
             });
 
             describe("Given data is not valid", () => {
-                it("should return a 400", async () => {
+                it("should return a 404", async () => {
                     jest.spyOn(Card, "findByIdAndUpdate").mockResolvedValueOnce(null);
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload)
                         .mockResolvedValueOnce(deckPayload);
@@ -164,7 +165,7 @@ describe("Card", () => {
                         await supertest(app).put(`/api/decks/${deckPayload._id}/cards/${responsePayload._id}`)
                             .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(404);
                             });
                     });
                 });

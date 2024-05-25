@@ -13,29 +13,27 @@ export class CardTrainingController {
             req.cards = data;
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
     async getCardTrainingsForToday(req: any, res: any, next: any) {
         let today = new Date();
-        let day = (today.getDate() < 10)? "0" + today.getDate() : today.getDate();
-        let month = (today.getMonth() + 1 < 10)? "0" + (today.getMonth() + 1): today.getMonth() + 1;
+        let day = (today.getDate() < 10) ? "0" + today.getDate() : today.getDate();
+        let month = (today.getMonth() + 1 < 10) ? "0" + (today.getMonth() + 1) : today.getMonth() + 1;
         let lowerDate = new Date(today.getFullYear() + "-" + month + "-" + day);
-        let deckTrainingIds = (!req.deckTrainings)? [] : req.deckTrainings.map((dt: any) => dt._id);
-        deckTrainingIds.push((!req.deckTraining)? undefined : req.deckTraining._id);
+        let deckTrainingIds = (!req.deckTrainings) ? [] : req.deckTrainings.map((dt: any) => dt._id);
+        deckTrainingIds.push((!req.deckTraining) ? undefined : req.deckTraining._id);
 
         CardTraining.find({
             deckTraining: {$in: deckTrainingIds},
-            nextTraining: { "$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1) },
+            nextTraining: {"$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1)},
             isShown: true
         }).then((data: any) => {
             req.cards = data;
             next();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -64,27 +62,36 @@ export class CardTrainingController {
         return CardTraining.create(cardTraining);
     }
 
-    async postCardTrainings(req: any, res: any) {
+    async postCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.postCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.CREATED).json(req.deckTraining);
         }).catch((e: any) => {
-            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be created");
-            console.log(e);
+            next(e);
         });
     }
 
-    async deleteCardTrainings(req: any, res: any) {
+    async deleteCardTrainingsDeckDeletion(req: any, res: any, next: any) {
+        let deckTrainingIds = (!req.deckTrainings) ? [] : req.deckTrainings.map((dt: any) => dt._id);
+        CardTraining.deleteMany({deckTraining: {$in: deckTrainingIds}})
+            .then((data: any) => {
+                res.status(StatusCodes.NO_CONTENT).json();
+            })
+            .catch((e: any) => {
+                next(e);
+            });
+    }
+
+    async deleteCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.deleteCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.NO_CONTENT).json();
         }).catch((e: any) => {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -95,15 +102,14 @@ export class CardTrainingController {
         });
     }
 
-    async putCardTrainings(req: any, res: any) {
+    async putCardTrainings(req: any, res: any, next: any) {
         let allPromises = req.cards.map((card: any) => {
             return this.putCardTraining(req, card);
         });
         Promise.all(allPromises).then((data: any) => {
             res.status(StatusCodes.OK).json(req.deckTraining);
         }).catch((e: any) => {
-            res.status(StatusCodes.BAD_REQUEST).json("A card training could not be updated");
-            console.log(e);
+            next(e);
         });
     }
 
@@ -122,7 +128,7 @@ export class CardTrainingController {
             {returnOriginal: false, runValidators: true, omitUndefined: true});
     }
 
-    async showHideCardTraining(req: any, res: any, isShown: any) {
+    async showHideCardTraining(req: any, res: any, next: any, isShown: any) {
         CardTraining.findOneAndUpdate({
                 deckTraining: req.deckTraining._id,
                 card: req.params.cardId
@@ -131,15 +137,14 @@ export class CardTrainingController {
             },
             {returnOriginal: false, runValidators: true, omitUndefined: true})
             .then((data: any) => {
-                if(!data) {
-                    res.status(StatusCodes.BAD_REQUEST).json("No card training for specified card");
+                if (!data) {
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred");
-                console.log(e);
+                next(e);
             })
     }
 

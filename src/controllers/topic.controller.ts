@@ -3,7 +3,7 @@ import sanitize from "mongo-sanitize";
 import {StatusCodes} from "http-status-codes";
 
 export class TopicController {
-    async postTopic(req: any, res: any) {
+    async postTopic(req: any, res: any, next: any) {
         let topic = new Topic({
             name: sanitize(req.body.name)
         })
@@ -11,22 +11,20 @@ export class TopicController {
             .then((data: any) =>
                 res.status(StatusCodes.CREATED).json(data))
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The topic could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
-    async deleteTopic(req: any, res: any) {
+    async deleteTopic(req: any, res: any, next: any) {
         Topic.findByIdAndDelete(sanitize(req.params.id))
             .then((data: any) =>
                 res.status(StatusCodes.NO_CONTENT).json())
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
-    async getTopics(req: any, res: any) {
+    async getTopics(req: any, res: any, next: any) {
         Topic.find({})
             .then((data: any) => {
                 if (!data || data.length == 0) {
@@ -36,8 +34,7 @@ export class TopicController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -45,33 +42,31 @@ export class TopicController {
         Topic.findById(sanitize(req.body.topic))
             .then((data: any) => {
                 if (!data && req.body.topic) {
-                    res.status(StatusCodes.BAD_REQUEST).json("The topic does not exist");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else {
                     next();
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("There was an error while retrieving the data");
-                console.log(e);
+                next(e);
             })
     }
 
-    async putTopic(req: any, res: any) {
+    async putTopic(req: any, res: any, next: any) {
         Topic.findByIdAndUpdate(sanitize(req.params.id), {
                 name: sanitize(req.body.name)
             },
             {returnOriginal: false, runValidators: true})
             .then((data: any) => {
                 if(!data) {
-                    res.status(StatusCodes.NOT_FOUND).json("Topic not found");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 }
                 else {
                     res.status(StatusCodes.OK).json(data);
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The topic could not be updated");
-                console.log(e);
+                next(e);
             })
     }
 }

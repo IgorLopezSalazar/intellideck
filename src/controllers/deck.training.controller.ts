@@ -21,8 +21,7 @@ export class DeckTrainingController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be created");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -40,17 +39,40 @@ export class DeckTrainingController {
             })
     }
 
+    async deleteDeckTrainings(req: any, res: any, next: any) {
+        DeckTraining.find({deck: req.deck._id})
+            .then((data: any) => {
+                req.deckTrainings = data;
+                DeckTraining.deleteMany({
+                    deck: req.deck._id
+                })
+                    .then((data: any) => {
+                        next();
+                    })
+                    .catch((e: any) => {
+                        next(e);
+                    })
+            })
+            .catch((e: any) => {
+                next(e);
+            });
+    }
+
     async getDeckTraining(req: any, res: any, next: any) {
         DeckTraining.findOne({
             user: req.decoded._id,
             deck: req.params.id
         })
             .then((data: any) => {
-                req.deckTraining = data;
-                next();
+                if (!data) {
+                    res.status(StatusCodes.NOT_FOUND).json();
+                } else {
+                    req.deckTraining = data;
+                    next();
+                }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("No deck training found");
+                next(e);
             })
     }
 
@@ -61,16 +83,12 @@ export class DeckTrainingController {
                 next();
             })
             .catch((e: any) => {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("An error occurred while obtaining the data");
+                next(e);
             })
     }
 
     async validateDeckTraining(req: any, res: any) {
-        if (!req.deckTraining) {
-            res.status(StatusCodes.NO_CONTENT).json();
-        } else {
-            res.status(StatusCodes.OK).json(req.deckTraining);
-        }
+        res.status(StatusCodes.OK).json(req.deckTraining);
     }
 
     async putDeckTraining(req: any, res: any, next: any) {
@@ -86,7 +104,7 @@ export class DeckTrainingController {
             {returnOriginal: false, runValidators: true, omitUndefined: true})
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.NOT_FOUND).json("Deck training not found");
+                    res.status(StatusCodes.NOT_FOUND).json();
                 } else if (!req.body.cards) {
                     res.status(StatusCodes.OK).json(data);
                 } else {
@@ -95,8 +113,7 @@ export class DeckTrainingController {
                 }
             })
             .catch((e: any) => {
-                res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be updated");
-                console.log(e);
+                next(e);
             })
     }
 
@@ -120,8 +137,7 @@ export class DeckTrainingController {
                     next();
                 })
                 .catch((e: any) => {
-                    res.status(StatusCodes.BAD_REQUEST).json("The deck training could not be updated");
-                    console.log(e);
+                    next(e);
                 })
         }
     }

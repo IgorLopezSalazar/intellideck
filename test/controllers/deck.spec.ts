@@ -174,20 +174,6 @@ describe("Deck", () => {
                 });
             });
         });
-
-        describe("Given deck data is invalid", () => {
-            it("should return a 400", async () => {
-                jest.spyOn(Deck, "create").mockRejectedValueOnce(new Error());
-                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).post(`/api/decks/`).send({
-                        description: "This is a test deck"
-                    }).set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                        .then(response => {
-                            expect(response.status).toEqual(400);
-                        });
-                });
-            });
-        });
     });
 
     describe("PUT deck", () => {
@@ -272,7 +258,7 @@ describe("Deck", () => {
         });
 
         describe("Given the topic was not found", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload)
                     .mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
@@ -280,7 +266,7 @@ describe("Deck", () => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", topic: "none"})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -302,7 +288,7 @@ describe("Deck", () => {
         });
 
         describe("Given at least one tag was not found", () => {
-            it("should return a 400", async () => {
+            it("should return a 404", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload)
                     .mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
@@ -311,7 +297,7 @@ describe("Deck", () => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}`).send({title: "TestDeck", tags: ["none"]})
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
-                            expect(response.status).toEqual(400);
+                            expect(response.status).toEqual(404);
                         });
                 });
             });
@@ -357,6 +343,314 @@ describe("Deck", () => {
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+    });
+
+    describe("POST Copy Deck", () => {
+        describe("Given deck is correctly copied", () => {
+            it("should return a 200 and the deck copy", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Deck, "findById").mockResolvedValueOnce({...responsePayload,
+                    toObject: jest.fn().mockReturnValueOnce({...responsePayload})
+                });
+                jest.spyOn(Deck, "create")
+                    .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                        resolve(responsePayload);
+                    }));
+                jest.spyOn(Card, "find").mockResolvedValueOnce([{...cardPayload,
+                    toObject: jest.fn().mockReturnValueOnce({...cardPayload})
+                }]);
+                jest.spyOn(Card, "create")
+                    .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                        resolve(cardPayload);
+                    }));
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).post(`/api/decks/${responsePayload._id}/copy`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
+                        });
+                });
+            });
+        });
+
+        describe("Given internal error occurs", () => {
+            describe("While finding deck", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).post(`/api/decks/${responsePayload._id}/copy`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While creating deck", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce({...responsePayload,
+                        toObject: jest.fn().mockReturnValueOnce({...responsePayload})
+                    });
+                    jest.spyOn(Deck, "create").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).post(`/api/decks/${responsePayload._id}/copy`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While finding cards", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce({...responsePayload,
+                        toObject: jest.fn().mockReturnValueOnce({...responsePayload})
+                    });
+                    jest.spyOn(Deck, "create")
+                        .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                            resolve(responsePayload);
+                        }));
+                    jest.spyOn(Card, "find").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).post(`/api/decks/${responsePayload._id}/copy`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While creating cards", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce({...responsePayload,
+                        toObject: jest.fn().mockReturnValueOnce({...responsePayload})
+                    });
+                    jest.spyOn(Deck, "create")
+                        .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                            resolve(responsePayload);
+                        }));
+                    jest.spyOn(Card, "find").mockResolvedValueOnce([{...cardPayload,
+                        toObject: jest.fn().mockReturnValueOnce({...cardPayload})
+                    }]);
+                    jest.spyOn(Card, "create").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).post(`/api/decks/${responsePayload._id}/copy`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+        });
+    });
+
+    describe("DELETE Deck", () => {
+        describe("Given deck exists", () => {
+            describe("Given is not published or user admin", () => {
+                it("should only remove deck, cards and, if necessary, deck trainings and card trainings, and return a 204", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Card, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(DeckTraining, "find").mockResolvedValueOnce([deckTrainingPayload]);
+                    jest.spyOn(DeckTraining, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(CardTraining, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(204);
+                            });
+                    });
+                });
+            });
+
+            describe("Given is published and user has role USER", () => {
+                it("should only remove creator field and return a 200", async () => {
+                    let responsePayloadAltered = {...responsePayload};
+                    responsePayloadAltered.isPublished = true;
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayloadAltered);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayloadAltered);
+                    jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(responsePayloadAltered);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given error occurs", () => {
+            describe("While searching deck", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While updating deck", () => {
+                it("should return a 500", async () => {
+                    let responsePayloadAltered = {...responsePayload};
+                    responsePayloadAltered.isPublished = true;
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayloadAltered);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayloadAltered);
+                    jest.spyOn(Deck, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While deleting deck", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While deleting cards", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Card, "deleteMany").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While finding deck trainings", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Card, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(DeckTraining, "find").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While deleting deck trainings", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Card, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(DeckTraining, "find").mockResolvedValueOnce([deckTrainingPayload]);
+                    jest.spyOn(DeckTraining, "deleteMany").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+
+            describe("While deleting card trainings", () => {
+                it("should return a 500", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Deck, "findByIdAndDelete").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(Card, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(DeckTraining, "find").mockResolvedValueOnce([deckTrainingPayload]);
+                    jest.spyOn(DeckTraining, "deleteMany").mockResolvedValueOnce({acknowledged: true, deletedCount: 1});
+                    jest.spyOn(CardTraining, "deleteMany").mockRejectedValueOnce(new Error());
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).delete(`/api/decks/${creatorPayload._id}`)
+                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                            .then(response => {
+                                expect(response.status).toEqual(500);
+                            });
+                    });
+                });
+            });
+        });
+    });
+
+    describe("GET Decks for timeline", () => {
+        describe("Given decks are found", () => {
+            it("should return a 200 and the decks", async () => {
+                jest.spyOn(Deck, "find").mockResolvedValueOnce([responsePayload]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                        });
+                });
+            });
+        });
+
+        describe("Given no decks are found", () => {
+            it("should return a 204", async () => {
+                jest.spyOn(Deck, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+
+        describe("Given an error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "find").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
                         });
                 });
             });
@@ -441,7 +735,7 @@ describe("Deck", () => {
             it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload).mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Card, "find").mockResolvedValueOnce([cardPayload]);
-                jest.spyOn(Deck, "findByIdAndUpdate").mockRejectedValueOnce(new Error());
+                jest.spyOn(Deck, "findOneAndUpdate").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}/publish`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -470,7 +764,7 @@ describe("Deck", () => {
             it("should return a 200 and the deck", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload).mockResolvedValueOnce(responsePayload);
                 jest.spyOn(Card, "find").mockResolvedValueOnce([cardPayload]);
-                jest.spyOn(Deck, "findByIdAndUpdate").mockResolvedValueOnce(responsePayload);
+                jest.spyOn(Deck, "findOneAndUpdate").mockResolvedValueOnce(responsePayload);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/decks/${responsePayload._id}/publish`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -488,7 +782,7 @@ describe("Deck", () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                 jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/decks/${responsePayload._id}/follow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(500);
@@ -507,7 +801,7 @@ describe("Deck", () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                     jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(followingPayload);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/follow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
                                 expect(response.status).toEqual(200);
@@ -520,13 +814,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to follow does not exists", () => {
-                it("should return a 400", async () => {
+                it("should return a 404", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/follow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(404);
                             });
                     });
                 });
@@ -539,7 +833,7 @@ describe("Deck", () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                     jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/follow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/follow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
                                 expect(response.status).toEqual(400);
@@ -556,7 +850,7 @@ describe("Deck", () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                 jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
+                    await supertest(app).put(`/api/decks/${responsePayload._id}/unfollow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
                         .then(response => {
                             expect(response.status).toEqual(500);
@@ -575,7 +869,7 @@ describe("Deck", () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                     jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(unfollowingPayload);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/unfollow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
                                 expect(response.status).toEqual(200);
@@ -587,13 +881,13 @@ describe("Deck", () => {
             });
 
             describe("Given deck to unfollow does not exists", () => {
-                it("should return a 400", async () => {
+                it("should return a 404", async () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/unfollow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
-                                expect(response.status).toEqual(400);
+                                expect(response.status).toEqual(404);
                             });
                     });
                 });
@@ -606,7 +900,7 @@ describe("Deck", () => {
                     jest.spyOn(Deck, "findOne").mockResolvedValueOnce(responsePayload);
                     jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).put(`/api/decks/unfollow`).send({id: responsePayload._id})
+                        await supertest(app).put(`/api/decks/${responsePayload._id}/unfollow`)
                             .set({"Authorization": token, 'Content-type': 'application/json'})
                             .then(response => {
                                 expect(response.status).toEqual(400);

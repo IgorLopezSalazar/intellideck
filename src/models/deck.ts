@@ -22,7 +22,7 @@ export const deckSchema = new Schema<IDeck>({
     description: { type: Schema.Types.String },
     image: { type: Schema.Types.String },
     isPublished: { type: Schema.Types.Boolean, required: true },
-    avgDeckRating: { type: Schema.Types.Number, min: 1, max: 10, validate : {
+    avgDeckRating: { type: Schema.Types.Number, min: 0, max: 10, default: 0, validate : {
             validator : Number.isInteger,
             message   : '{VALUE} is not an integer value'
         } },

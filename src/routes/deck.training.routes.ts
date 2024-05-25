@@ -20,8 +20,8 @@ router.post('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
     return deckTrainingController.postDeckTraining(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardController.getCardsOfDeck(req, res, next);
-}, (req: any, res: any) => {
-    return cardTrainingController.postCardTrainings(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.postCardTrainings(req, res, next);
 })
 
 router.put('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
@@ -34,8 +34,8 @@ router.put('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
     return deckTrainingController.putStatisticsAverageTime(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardTrainingController.getCardTrainingsOfDeckTraining(req, res, next);
-}, (req: any, res: any) => {
-    return cardTrainingController.putCardTrainings(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.putCardTrainings(req, res, next);
 })
 
 router.delete('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
@@ -46,8 +46,8 @@ router.delete('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
     return deckTrainingController.deleteDeckTraining(req, res, next);
 }, (req: any, res: any, next: any) => {
     return cardController.getCardsOfDeck(req, res, next);
-}, (req: any, res: any) => {
-    return cardTrainingController.deleteCardTrainings(req, res);
+}, (req: any, res: any, next: any) => {
+    return cardTrainingController.deleteCardTrainings(req, res, next);
 })
 
 router.get('/decks/:id/deckTraining',(req: any, res: any, next: any) => {
