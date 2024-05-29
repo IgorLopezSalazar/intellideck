@@ -16,7 +16,8 @@ const storage = multer.diskStorage({
         cb(null, crypto.randomUUID() + '.' + extension);
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage,
+    limits: { fileSize: 1000000 /* bytes */ }});
 const middleware: Middleware = new Middleware();
 
 router.post('/images',(req: any, res: any, next: any) => {

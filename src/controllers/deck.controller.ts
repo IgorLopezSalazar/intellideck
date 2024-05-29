@@ -299,7 +299,7 @@ export class DeckController {
     async deleteDeck(req: any, res: any, next: any) {
         Deck.findById(sanitize(req.params.id))
             .then((data: any) => {
-                if (req.decoded.role == "USER" && data && data.isPublished) {
+                if (req.decoded.role == "USER" && data?.isPublished) {
                     Deck.findByIdAndUpdate(req.params.id, {$unset: {creator: 1}})
                         .then((data: any) => {
                             res.status(StatusCodes.OK).json();
