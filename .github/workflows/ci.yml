@@ -27,10 +27,12 @@ jobs:
         run: |
           touch private.key
           echo "$MY_SECRET" >> private.key
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.10.0
-        with:
-          mongodb-version: '6.0'
+      - name: Create public.key file
+        env:
+          MY_SECRET_PUBLIC: ${{ secrets.PUBLIC_KEY }}
+        run: |
+          touch public.key
+          echo "$MY_SECRET_PUBLIC" >> public.key
       - name: Test
         run: npm test
       - name: Sonar

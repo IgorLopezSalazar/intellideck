@@ -9,6 +9,7 @@ export class CardController {
             question: sanitize(req.body.question),
             answer: sanitize(req.body.answer),
             image: sanitize(req.body.image),
+            whereImage: sanitize(req.body.whereImage),
             deck: sanitize(req.params.id)
         })
         Card.create(card)
@@ -57,7 +58,8 @@ export class CardController {
         Card.findByIdAndUpdate(sanitize(req.params.cardId), {
             question: sanitize(req.body.question),
             answer: sanitize(req.body.answer),
-            image: sanitize(req.body.image)
+            image: sanitize(req.body.image),
+            whereImage: sanitize(req.body.whereImage)
         }, {returnOriginal: false, runValidators: true})
             .then((data: any) => {
                 if (!data) {

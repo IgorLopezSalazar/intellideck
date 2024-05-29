@@ -55,7 +55,6 @@ export class UserController {
                 username: sanitize(req.body.username),
                 email: sanitize(req.body.email),
                 password: hashSync(req.body.password, SALT_ROUNDS),
-                profilePicture: sanitize(req.body.profilePicture),
                 role: sanitize(req.body.role)
             })
             User.create(user)
