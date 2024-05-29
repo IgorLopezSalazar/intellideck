@@ -8,14 +8,15 @@ import {StatusCodes} from 'http-status-codes';
 dotenv.config();
 
 const router = express.Router();
-const upload = multer({ storage: multer.diskStorage({
-        destination: './public/images/',
-        filename: function (req, file, cb) {
-            let extArray = file.mimetype.split("/");
-            let extension = extArray[extArray.length - 1];
-            cb(null, crypto.randomUUID() + '.' + extension);
-        }
-    }),
+const storage = multer.diskStorage({
+    destination: './public/images/',
+    filename: function (req, file, cb) {
+        let extArray = file.mimetype.split("/");
+        let extension = extArray[extArray.length - 1];
+        cb(null, crypto.randomUUID() + '.' + extension);
+    }
+});
+const upload = multer({ storage: storage,
     limits: { fileSize: 8000000 /* bytes */ }});
 const middleware: Middleware = new Middleware();
 

@@ -41,6 +41,8 @@ app.use((err: any, req: any, res: any, next: any) => {
         res.status(StatusCodes.BAD_REQUEST);
     } else if(err.kind == 'ObjectId') {
         res.status(StatusCodes.BAD_REQUEST);
+    }else if(err.code == "LIMIT_FILE_SIZE") {
+        res.status(StatusCodes.BAD_REQUEST);
     }
     next(err);
 })
