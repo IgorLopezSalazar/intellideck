@@ -112,6 +112,20 @@ export class DeckController {
             })
     }
 
+    async getDeck(req: any, res: any, next: any) {
+        Deck.findById(sanitize(req.params.id))
+            .then((data: any) => {
+                if(!data) {
+                    res.status(StatusCodes.NOT_FOUND).json(data);
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
+
     async updateDeckRating(req: any, res: any, next: any) {
         Deck.findByIdAndUpdate(sanitize(req.params.id), {
             avgDeckRating: req.avg
