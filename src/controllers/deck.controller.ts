@@ -30,7 +30,9 @@ export class DeckController {
             description: sanitize(req.body.description),
             image: sanitize(req.body.image),
             isPublished: false,
-            creator: req.decoded._id
+            creator: req.decoded._id,
+            topic: sanitize(req.body.topic),
+            tags: sanitize(req.body.tags)
         })
         Deck.create(deck)
             .then((data: any) =>
