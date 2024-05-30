@@ -162,6 +162,8 @@ describe("Deck", () => {
                     .mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
                         resolve(responsePayload);
                     }));
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
+                jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).post(`/api/decks/`).send({
                         title: "TestDeck",
