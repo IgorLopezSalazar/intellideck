@@ -58,10 +58,16 @@ router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
     return userController.validateDecksFollowed(req, res);
 })
 
-router.get('/decks/:id',(req: any, res: any, next: any) => {
+router.get('/decks/user/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
     return deckController.getUserDecks(req, res, next);
+})
+
+router.get('/decks/:id',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.getDeck(req, res, next);
 })
 
 router.delete('/decks/:id',(req: any, res: any, next: any) => {

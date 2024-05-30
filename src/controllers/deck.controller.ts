@@ -30,7 +30,9 @@ export class DeckController {
             description: sanitize(req.body.description),
             image: sanitize(req.body.image),
             isPublished: false,
-            creator: req.decoded._id
+            creator: req.decoded._id,
+            topic: sanitize(req.body.topic),
+            tags: sanitize(req.body.tags)
         })
         Deck.create(deck)
             .then((data: any) =>
@@ -106,6 +108,20 @@ export class DeckController {
             .exec()
             .then((data: any) => {
                 res.status(StatusCodes.OK).json(data);
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
+
+    async getDeck(req: any, res: any, next: any) {
+        Deck.findById(sanitize(req.params.id))
+            .then((data: any) => {
+                if(!data) {
+                    res.status(StatusCodes.NOT_FOUND).json(data);
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
             })
             .catch((e: any) => {
                 next(e);

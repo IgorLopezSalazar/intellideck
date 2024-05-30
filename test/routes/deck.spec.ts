@@ -325,7 +325,7 @@ describe("Deck", () => {
             it("should return a 200 and the decks", async () => {
                 jest.spyOn(Deck, "find").mockResolvedValueOnce([responsePayload]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/decks/${creatorPayload._id}`)
+                    await supertest(app).get(`/api/decks/user/${creatorPayload._id}`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(200);
@@ -339,7 +339,7 @@ describe("Deck", () => {
             it("should return a 204", async () => {
                 jest.spyOn(Deck, "find").mockResolvedValueOnce([]);
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                    await supertest(app).get(`/api/decks/${creatorPayload._id}`)
+                    await supertest(app).get(`/api/decks/user/${creatorPayload._id}`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                         .then(response => {
                             expect(response.status).toEqual(204);
