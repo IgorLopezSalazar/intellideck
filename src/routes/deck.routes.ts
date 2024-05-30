@@ -21,6 +21,10 @@ const middleware: Middleware = new Middleware();
 router.post('/decks',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
+    return topicController.validateTopic(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return tagController.validateTags(req, res, next);
+}, (req: any, res: any, next: any) => {
     return deckController.postDeck(req, res, next);
 })
 
