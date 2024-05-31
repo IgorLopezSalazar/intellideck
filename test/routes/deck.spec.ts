@@ -176,6 +176,23 @@ describe("Deck", () => {
                 });
             });
         });
+
+        describe("Given error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(Deck, "create").mockRejectedValueOnce(new Error());
+                jest.spyOn(Topic, "findById").mockResolvedValueOnce(null);
+                jest.spyOn(Tag, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).post(`/api/decks/`).send({
+                        title: "TestDeck",
+                        description: "This is a test deck"
+                    }).set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
+                });
+            });
+        });
     });
 
     describe("PUT deck", () => {

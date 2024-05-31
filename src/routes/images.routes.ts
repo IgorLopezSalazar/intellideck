@@ -25,8 +25,9 @@ router.post('/images',(req: any, res: any, next: any) => {
 }, upload.single('file'), function (req : any, res: any) {
     if(!req.file) {
         res.status(StatusCodes.BAD_REQUEST).json();
+    } else {
+        res.status(StatusCodes.OK).json(`http://${process.env.LOCAL_HOST}:${process.env.PORT}/images/${req.file.filename}`);
     }
-    res.status(StatusCodes.OK).json(`http://${process.env.LOCAL_HOST}:${process.env.PORT}/images/${req.file.filename}`);
 });
 
 export{ router };

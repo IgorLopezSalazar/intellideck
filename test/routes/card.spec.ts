@@ -93,17 +93,48 @@ describe("Card", () => {
             });
 
             describe("Given Internal Error occurs", () => {
-                it("should return a 500", async () => {
-                    jest.spyOn(Card, "create").mockRejectedValueOnce(new Error());
-                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload)
-                        .mockResolvedValueOnce(deckPayload);
-                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).post(`/api/decks/${deckPayload._id}/cards`).send(
-                            {question: responsePayload.question, answer: responsePayload.answer})
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(500);
-                            });
+                describe("While verifying creator", () => {
+                    it("should return a 500", async () => {
+                        jest.spyOn(Deck, "findOne").mockRejectedValueOnce(new Error());
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                            await supertest(app).post(`/api/decks/${deckPayload._id}/cards`).send(
+                                {question: responsePayload.question, answer: responsePayload.answer})
+                                .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                                .then(response => {
+                                    expect(response.status).toEqual(500);
+                                });
+                        });
+                    });
+                });
+
+                describe("While verifying unpublished", () => {
+                    it("should return a 500", async () => {
+                        jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload)
+                            .mockRejectedValueOnce(new Error());
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                            await supertest(app).post(`/api/decks/${deckPayload._id}/cards`).send(
+                                {question: responsePayload.question, answer: responsePayload.answer})
+                                .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                                .then(response => {
+                                    expect(response.status).toEqual(500);
+                                });
+                        });
+                    });
+                });
+
+                describe("While creating card", () => {
+                    it("should return a 500", async () => {
+                        jest.spyOn(Card, "create").mockRejectedValueOnce(new Error());
+                        jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload)
+                            .mockResolvedValueOnce(deckPayload);
+                        await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                            await supertest(app).post(`/api/decks/${deckPayload._id}/cards`).send(
+                                {question: responsePayload.question, answer: responsePayload.answer})
+                                .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                                .then(response => {
+                                    expect(response.status).toEqual(500);
+                                });
+                        });
                     });
                 });
             });
