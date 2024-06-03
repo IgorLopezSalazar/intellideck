@@ -132,3 +132,7 @@ dist
 
 .idea
 .key
+# stryker temp files
+.stryker-tmp
+
+reports/
