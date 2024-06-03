@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import {app} from "./app.ts";
 
-const db_connection = `mongodb://${process.env.HOST}:${process.env.MONGO_PORT}/${process.env.DATABASE_NAME}`;
+const db_connection = `${process.env.DB_CONNECTION}`;
 
 mongoose.connect(db_connection)
     .then(() => {

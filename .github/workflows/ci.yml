@@ -17,10 +17,9 @@ jobs:
         run: |
           touch .env
           echo NODE_ENV=${{ secrets.ENV_NODE_ENV }} >> .env
-          echo HOST=${{ secrets.ENV_HOST }} >> .env
           echo PORT=${{ secrets.ENV_PORT }} >> .env
           echo FRONTEND_PORT=${{ secrets.ENV_FRONTEND_PORT }} >> .env
-          echo MONGO_PORT=${{ secrets.ENV_MONGO_PORT }} >> .env
+          echo DB_CONNECTION=${{ secrets.ENV_DB_CONNECTION }} >> .env
       - name: Create private.key file
         env:
           MY_SECRET: ${{ secrets.PRIVATE_KEY }}
