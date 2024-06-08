@@ -65,7 +65,7 @@ export class RatingController {
         })
             .then((data: any) => {
                 if (!data) {
-                    res.status(StatusCodes.NOT_FOUND).json();
+                    res.status(StatusCodes.BAD_REQUEST).json();
                 } else {
                     req.rating = data;
                     next();

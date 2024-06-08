@@ -17,6 +17,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors({origin: `http://${process.env.LOCAL_HOST}:${process.env.FRONTEND_PORT}`}));
+app.use(cors({origin: `https://intellideck-frontend.onrender.com`}));
 app.use(express.static('public'));
 app.disable("x-powered-by");
 app.use(express.urlencoded({extended: false}));
