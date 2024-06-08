@@ -9,7 +9,7 @@ const PAGINATION_SIZE: number = 20;
 export class DeckController {
     async getPaginatedDecks(req: any, res: any, next: any) {
         let page = (!req.query.page)? 0: req.query.page;
-        Deck.find({}, null,
+        Deck.find({isPublished: true}, null,
             {skip: PAGINATION_SIZE * page,
                 limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
             .then((data: any) => {
