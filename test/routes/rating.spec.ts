@@ -120,7 +120,7 @@ describe("Rating", () => {
 
             describe("Given data is not valid", () => {
                 describe("Given data for find is not correct", () => {
-                    it("should return a 404", async () => {
+                    it("should return a 400", async () => {
                         jest.spyOn(Rating, "findOneAndUpdate").mockResolvedValueOnce(null);
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
@@ -131,7 +131,7 @@ describe("Rating", () => {
                                     "Authorization": token
                                 })
                                 .then(response => {
-                                    expect(response.status).toEqual(404);
+                                    expect(response.status).toEqual(400);
                                 });
                         });
                     });
