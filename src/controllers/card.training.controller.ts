@@ -66,7 +66,7 @@ export class CardTrainingController {
         let allPromises = req.cards.map((card: any) => {
             return this.postCardTraining(req, card);
         });
-        Promise.all(allPromises).then((data: any) => {
+        Promise.all(allPromises).then(() => {
             res.status(StatusCodes.CREATED).json(req.deckTraining);
         }).catch((e: any) => {
             next(e);
@@ -76,7 +76,7 @@ export class CardTrainingController {
     async deleteCardTrainingsDeckDeletion(req: any, res: any, next: any) {
         let deckTrainingIds = (!req.deckTrainings) ? [] : req.deckTrainings.map((dt: any) => dt._id);
         CardTraining.deleteMany({deckTraining: {$in: deckTrainingIds}})
-            .then((data: any) => {
+            .then(() => {
                 res.status(StatusCodes.NO_CONTENT).json();
             })
             .catch((e: any) => {
@@ -88,7 +88,7 @@ export class CardTrainingController {
         let allPromises = req.cards.map((card: any) => {
             return this.deleteCardTraining(req, card);
         });
-        Promise.all(allPromises).then((data: any) => {
+        Promise.all(allPromises).then(() => {
             res.status(StatusCodes.NO_CONTENT).json();
         }).catch((e: any) => {
             next(e);
@@ -106,7 +106,7 @@ export class CardTrainingController {
         let allPromises = req.cards.map((card: any) => {
             return this.putCardTraining(req, card);
         });
-        Promise.all(allPromises).then((data: any) => {
+        Promise.all(allPromises).then(() => {
             res.status(StatusCodes.OK).json(req.deckTraining);
         }).catch((e: any) => {
             next(e);

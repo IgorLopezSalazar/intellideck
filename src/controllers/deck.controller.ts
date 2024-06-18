@@ -149,7 +149,7 @@ export class DeckController {
         Deck.findByIdAndUpdate(sanitize(req.params.id), {
             avgDeckRating: req.avg
         }, {returnOriginal: false, runValidators: true})
-            .then((data: any) => {
+            .then(() => {
                 next();
             })
             .catch((e: any) => {
@@ -344,7 +344,7 @@ export class DeckController {
             .then((data: any) => {
                 if (req.decoded.role == "USER" && data?.isPublished) {
                     Deck.findByIdAndUpdate(req.params.id, {$unset: {creator: 1}})
-                        .then((data: any) => {
+                        .then(() => {
                             res.status(StatusCodes.OK).json();
                         })
                         .catch((e: any) => {

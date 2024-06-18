@@ -34,7 +34,7 @@ export class DeckTrainingController {
                 req.deckTraining = data;
                 next();
             })
-            .catch((e: any) => {
+            .catch(() => {
                 res.status(StatusCodes.NO_CONTENT).json();
             })
     }
@@ -46,7 +46,7 @@ export class DeckTrainingController {
                 DeckTraining.deleteMany({
                     deck: req.deck._id
                 })
-                    .then((data: any) => {
+                    .then(() => {
                         next();
                     })
                     .catch((e: any) => {
