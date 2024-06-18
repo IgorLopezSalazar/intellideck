@@ -62,6 +62,12 @@ router.get('/decks/followed/:id',(req: any, res: any, next: any) => {
     return userController.validateDecksFollowed(req, res);
 })
 
+router.get('/decks/own',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return deckController.getOwnDecks(req, res, next);
+})
+
 router.get('/decks/user/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {

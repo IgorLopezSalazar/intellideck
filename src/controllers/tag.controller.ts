@@ -19,7 +19,7 @@ export class TagController {
     }
 
     async validateTags(req: any, res: any, next: any) {
-        Tag.find({name: {$nin: [sanitize(req.body.tags)]}}, "_id")
+        Tag.find({_id: {$in: sanitize(req.body.tags)}}, "_id")
             .then((data: any) => {
                 if (req.body.tags && req.body.tags.length != data.length) {
                     res.status(StatusCodes.NOT_FOUND).json();

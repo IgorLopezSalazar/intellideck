@@ -21,10 +21,7 @@ export interface IDeckTraining {
 
 const statisticsSchema = new Schema<IStatistics>({
     avgCompletionTimeSeconds: {
-        type: Schema.Types.Number, min: 0, validate: {
-            validator: Number.isInteger,
-            message: '{VALUE} is not an integer value'
-        }
+        type: Schema.Types.Number, min: 0
     },
     attempts: {
         type: Schema.Types.Number, min: 0, validate: {

@@ -121,9 +121,9 @@ export class DeckTrainingController {
         if (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0) {
             res.status(StatusCodes.BAD_REQUEST).json("Missing or invalid completion time of attempt");
         } else {
-            const avgCompletionTimeSeconds = Math.round(((req.deckTraining.statistics.avgCompletionTimeSeconds *
+            const avgCompletionTimeSeconds = ((req.deckTraining.statistics.avgCompletionTimeSeconds *
                     (req.deckTraining.statistics.attempts))
-                + req.body.completionTimeSeconds) / (req.deckTraining.statistics.attempts + 1));
+                + req.body.completionTimeSeconds) / (req.deckTraining.statistics.attempts + 1);
             DeckTraining.findOneAndUpdate({
                     user: req.decoded._id,
                     deck: req.params.id

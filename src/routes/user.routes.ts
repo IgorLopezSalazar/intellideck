@@ -6,6 +6,12 @@ const router = express.Router();
 const userController = new UserController();
 const middleware: Middleware = new Middleware();
 
+router.get('/users/logged',(req: any, res: any, next: any) => {
+    return middleware.isAuthenticated(req, res, next);
+}, (req: any, res: any, next: any) => {
+    return userController.getUser(req, res, next, true);
+})
+
 router.get('/users/followed/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
@@ -65,7 +71,7 @@ router.put('/users', (req: any, res: any, next: any) => {
 router.get('/users/:id',(req: any, res: any, next: any) => {
     return middleware.isAuthenticated(req, res, next);
 }, (req: any, res: any, next: any) => {
-    return userController.getUser(req, res, next);
+    return userController.getUser(req, res, next, false);
 })
 
 router.post('/login', (req: any, res: any, next: any) => {

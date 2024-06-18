@@ -66,8 +66,10 @@ export class UserController {
         }
     }
 
-    async getUser(req: any, res: any, next: any) {
-        User.findById(req.params.id)
+    async getUser(req: any, res: any, next: any, logged: boolean) {
+        let id = logged ? req.decoded._id : req.params.id;
+        User.findById(id)
+            .populate('followedUsers').populate('followedDecks').exec()
             .then((data: any) => {
                 if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json();
@@ -120,7 +122,8 @@ export class UserController {
                 [collection]: {$nin: [sanitize(req.params.id)]}
             },
             {"$push": {[collection]: sanitize(req.params.id)}},
-            {returnOriginal: false, runValidators: true});
+            {returnOriginal: false, runValidators: true})
+            .populate('followedUsers').populate('followedDecks').exec();
     }
 
     async genericUnfollow(req: any, collection: string) {
@@ -129,7 +132,8 @@ export class UserController {
                 [collection]: {$in: [sanitize(req.params.id)]}
             },
             {"$pull": {[collection]: sanitize(req.params.id)}},
-            {returnOriginal: false, runValidators: true});
+            {returnOriginal: false, runValidators: true})
+            .populate('followedUsers').populate('followedDecks').exec();
     }
 
     async putUnfollowUser(req: any, res: any, next: any) {
@@ -267,7 +271,14 @@ export class UserController {
 
     async getDecksFollowed(req: any, res: any, next: any) {
         User.findById((req.params.id) ? sanitize(req.params.id) : req.decoded._id, 'followedDecks')
-            .populate("followedDecks").exec()
+            .populate({
+                path: 'followedDecks',
+                populate: [
+                    { path: 'creator' },
+                    { path: 'tags' },
+                    { path: 'topic' }
+                ]
+            }).exec()
             .then((data: any) => {
                 req.userDecksFollowed = data;
                 next();

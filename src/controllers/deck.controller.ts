@@ -12,6 +12,7 @@ export class DeckController {
         Deck.find({isPublished: true}, null,
             {skip: PAGINATION_SIZE * page,
                 limit: PAGINATION_SIZE, sort: {avgDeckRating: 'desc'}})
+            .populate("topic").populate("tags").populate("creator").exec()
             .then((data: any) => {
                 if (!data || data.length == 0) {
                     res.status(StatusCodes.NO_CONTENT).json();
@@ -61,6 +62,22 @@ export class DeckController {
                         next(e);
                     })
             }).catch((e: any) => {
+            next(e);
+        });
+    }
+
+    async getOwnDecks(req: any, res: any, next: any) {
+        Deck.find({
+            creator: req.decoded._id
+        })
+            .populate("topic").populate("tags").populate("creator").exec()
+            .then((data: any[]) => {
+            if (data.length == 0) {
+                res.status(StatusCodes.NO_CONTENT).json();
+            } else {
+                res.status(StatusCodes.OK).json(data);
+            }
+        }).catch((e: any) => {
             next(e);
         });
     }
@@ -242,6 +259,7 @@ export class DeckController {
                     as: "topic"
                 }
             },
+            { $unwind: { path: "$topic", preserveNullAndEmptyArrays: false } },
             {
                 $lookup: {
                     from: "tags",
@@ -256,8 +274,15 @@ export class DeckController {
                             }
                         }
                     ],
-                    as: "tags"
+                    as: "tagsCheck"
                 }
+            },
+            {
+                $lookup: {
+                    from: 'tags',
+                    localField: 'tags',
+                    foreignField: '_id',
+                    as: 'tags'}
             },
             {
                 $lookup: {
@@ -276,15 +301,17 @@ export class DeckController {
                     as: "creator"
                 }
             },
+            { $unwind: { path: "$creator", preserveNullAndEmptyArrays: false } },
             {
                 $match: {
                     $and: [
                         {$expr: {$ne: ["$topic", []]}},
-                        {$expr: {$ne: ["$tags", []]}},
+                        {$expr: {$ne: ["$tagsCheck", []]}},
                         {$expr: {$ne: ["$creator", []]}}
                     ]
                 }
             },
+            { $unset: [ "tagsCheck" ] }
         ])
             .then((data: any) => {
                 if (!data || data.length == 0) {

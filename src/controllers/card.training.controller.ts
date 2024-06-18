@@ -7,9 +7,9 @@ export class CardTrainingController {
 
     async getCardTrainingsOfDeckTraining(req: any, res: any, next: any) {
         CardTraining.find({
-            deckTraining: req.deckTraining._id,
-            isShown: true
-        }).then((data: any) => {
+            deckTraining: req.deckTraining._id
+        }).populate('card').populate('deckTraining')
+            .then((data: any) => {
             req.cards = data;
             next();
         }).catch((e: any) => {
@@ -27,9 +27,9 @@ export class CardTrainingController {
 
         CardTraining.find({
             deckTraining: {$in: deckTrainingIds},
-            nextTraining: {"$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1)},
-            isShown: true
-        }).then((data: any) => {
+            nextTraining: {"$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1)}
+        }).populate('card').populate('deckTraining')
+            .then((data: any) => {
             req.cards = data;
             next();
         }).catch((e: any) => {
@@ -114,13 +114,15 @@ export class CardTrainingController {
     }
 
     async putCardTraining(req: any, card: any) {
-        let putCard: any = req.body.cards.find((bodyCard: any) => bodyCard.id == card.card);
+        let putCard: any = req.body.cards.find((bodyCard: any) => bodyCard.id == card.card._id);
+        if (!putCard) return;
+
         if (putCard.box > req.deckTraining.boxAmount) {
             putCard.box = -1;
         }
         return CardTraining.findOneAndUpdate({
                 deckTraining: req.deckTraining._id,
-                card: card.card
+                card: card.card._id
             }, {
                 box: sanitize(putCard.box),
                 nextTraining: this.calculateNextSession(sanitize(putCard.box))
