@@ -52,7 +52,16 @@ describe("Card Training", () => {
             it("should return a 200 and the card trainings", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([{...datePayload, ...tempResponsePayload}]);
+                jest.spyOn(CardTraining, 'find').mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    resolve([{...datePayload, ...tempResponsePayload}]);
+                                }))
+                            })
+                    })
+                } as any));
 
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards`)
@@ -70,7 +79,16 @@ describe("Card Training", () => {
             it("should return a 204", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([]);
+                jest.spyOn(CardTraining, "find").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    resolve([]);
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -85,7 +103,16 @@ describe("Card Training", () => {
             it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockRejectedValueOnce(new Error());
+                jest.spyOn(CardTraining, "find").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    reject(new Error());
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -102,7 +129,16 @@ describe("Card Training", () => {
             it("should return a 200 and the card trainings for today (day and month < 10)", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([{...datePayload, ...tempResponsePayload}]);
+                jest.spyOn(CardTraining, 'find').mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    resolve([{...datePayload, ...tempResponsePayload}]);
+                                }))
+                            })
+                    })
+                } as any));
 
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards/today`)
@@ -120,7 +156,16 @@ describe("Card Training", () => {
             it("should return a 204", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockResolvedValueOnce([]);
+                jest.spyOn(CardTraining, 'find').mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    resolve([]);
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards/today`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
@@ -135,7 +180,16 @@ describe("Card Training", () => {
             it("should return a 500", async () => {
                 jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                 jest.spyOn(DeckTraining, "findOne").mockResolvedValueOnce(deckTrainingPayload);
-                jest.spyOn(CardTraining, "find").mockRejectedValueOnce(new Error());
+                jest.spyOn(CardTraining, 'find').mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    reject(new Error());
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).get(`/api/decks/${deckPayload._id}/deckTraining/cards/today`)
                         .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
