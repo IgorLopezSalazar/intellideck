@@ -759,6 +759,86 @@ describe("Deck", () => {
         });
     });
 
+    describe("GET own decks", () => {
+        describe("Given user has no own decks", () => {
+            it("should return a 204", async () => {
+                jest.spyOn(Deck, "find").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () => ({
+                            populate: () =>
+                                ({
+                                    exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                        resolve([]);
+                                    }))
+                                })
+                        })
+                    })
+                } as any));
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/own`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+
+        describe("Given user has own decks", () => {
+            it("should return a 200 and the decks", async () => {
+                jest.spyOn(Deck, "find").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () => ({
+                            populate: () =>
+                                ({
+                                    exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                        resolve([responsePayload]);
+                                    }))
+                                })
+                        })
+                    })
+                } as any));
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/own`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                        });
+                });
+            });
+        });
+    });
+
+    describe("GET deck by ID", () => {
+        describe("Given deck is not found", () => {
+            it("should return a 404", async () => {
+                jest.spyOn(Deck, "findById").mockResolvedValueOnce(null);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/${responsePayload._id}`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(404);
+                        });
+                });
+            });
+        });
+
+        describe("Given deck associated with ID exists", () => {
+            it("should return a 200 and the decks", async () => {
+                jest.spyOn(Deck, "findById").mockResolvedValueOnce(responsePayload);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/${responsePayload._id}`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
+                        });
+                });
+            });
+        });
+    });
+
     describe("GET Decks followed by User", () => {
         describe("Given user follows decks", () => {
             it("should return a 200 and the decks", async () => {

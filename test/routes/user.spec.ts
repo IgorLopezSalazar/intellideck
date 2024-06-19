@@ -95,6 +95,7 @@ describe("User", () => {
                 });
             })
         });
+
         describe("User not logged", () => {
             describe("Given valid user ID and not sending token", () => {
                 it("should return a 400 bad request", async () => {
@@ -114,6 +115,40 @@ describe("User", () => {
                         });
                 });
             })
+        });
+    })
+
+    describe("GET User logged", () => {
+        describe("User is logged", () => {
+            it("should return a 200", async () => {
+                jest.spyOn(User, "findById").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    resolve(responsePayload);
+                                }))
+                            })
+                    })
+                } as any));
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/users/logged`)
+                        .set({"Authorization": token}).then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.objectContaining(responsePayload));
+                        });
+                });
+            });
+        });
+
+        describe("User not logged", () => {
+            it("should return a 401 unauthorized", async () => {
+                await supertest(app).get(`/api/users/logged`)
+                    .set({"Authorization": invalidToken})
+                    .then(response => {
+                        expect(response.status).toEqual(401);
+                    });
+            });
         });
     })
 
