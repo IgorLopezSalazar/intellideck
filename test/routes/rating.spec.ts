@@ -94,6 +94,62 @@ describe("Rating", () => {
         });
     });
 
+    describe("GET Rating of logged user", () => {
+        describe("Given user has rated the deck", () => {
+            describe("Given data is valid", () => {
+                it("should return a 200 and the rating", async () => {
+                    jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
+                    jest.spyOn(Rating, "findOne").mockResolvedValueOnce(responsePayload[0]);
+                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                        await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`).send(
+                            {rate: responsePayload[0].rate})
+                            .set({
+                                Accept: 'application/json',
+                                'Content-type': 'application/json',
+                                "Authorization": token
+                            })
+                            .then(response => {
+                                expect(response.status).toEqual(200);
+                                expect(response.body).toMatchObject(expect.objectContaining(responsePayload[0]));
+                            });
+                    });
+                });
+            });
+        });
+
+        describe("Given user has not rated the deck", () => {
+            it("should return a 204", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
+                jest.spyOn(Rating, "findOne").mockResolvedValueOnce(null);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`).send(
+                        {rate: responsePayload[0].rate})
+                        .set({
+                            Accept: 'application/json',
+                            'Content-type': 'application/json',
+                            "Authorization": token
+                        })
+                        .then(response => {
+                            expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+
+        describe("Given deck is unpublished", () => {
+            it("should return a 404", async () => {
+                jest.spyOn(Deck, "findOne").mockResolvedValueOnce(null);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/decks/${deckPayload._id}/ratings`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(404);
+                        });
+                });
+            });
+        });
+    });
+
     describe("PUT Rating", () => {
         describe("Given logged user has rated the deck", () => {
             describe("Given data is valid", () => {

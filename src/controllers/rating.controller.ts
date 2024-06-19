@@ -86,4 +86,21 @@ export class RatingController {
                 next(e);
             })
     }
+
+    async getRating(req: any, res: any, next: any) {
+        Rating.findOne({
+            user: sanitize(req.decoded._id),
+            deck: sanitize(req.params.id)
+        })
+            .then((data: any) => {
+                if (!data) {
+                    res.status(StatusCodes.NO_CONTENT).json();
+                } else {
+                    res.status(StatusCodes.OK).json(data);
+                }
+            })
+            .catch((e: any) => {
+                next(e);
+            })
+    }
 }
