@@ -33,7 +33,16 @@ describe("User", () => {
             describe("Given ID not existing", () => {
                 it("should return a 404", async () => {
                     const id = 'none';
-                    jest.spyOn(User, "findById").mockResolvedValueOnce(null);
+                    jest.spyOn(User, "findById").mockImplementation(() => ({
+                        populate: () => ({
+                            populate: () =>
+                                ({
+                                    exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                        resolve(null);
+                                    }))
+                                })
+                        })
+                    } as any));
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).get(`/api/users/${id}`)
                             .set({"Authorization": token}).then(response => {
@@ -45,7 +54,16 @@ describe("User", () => {
 
             describe("Given Internal error occurs", () => {
                 it("should return a 500", async () => {
-                    jest.spyOn(User, "findById").mockRejectedValueOnce(new Error());
+                    jest.spyOn(User, "findById").mockImplementation(() => ({
+                        populate: () => ({
+                            populate: () =>
+                                ({
+                                    exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                        reject(new Error());
+                                    }))
+                                })
+                        })
+                    } as any));
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).get(`/api/users/${responsePayload._id}`)
                             .set({"Authorization": token}).then(response => {
@@ -57,7 +75,16 @@ describe("User", () => {
 
             describe("Given valid user ID", () => {
                 it("should return a 200 and the user", async () => {
-                    jest.spyOn(User, "findById").mockResolvedValueOnce(responsePayload);
+                    jest.spyOn(User, "findById").mockImplementation(() => ({
+                        populate: () => ({
+                            populate: () =>
+                                ({
+                                    exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                        resolve(responsePayload);
+                                    }))
+                                })
+                        })
+                    } as any));
                     await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                         await supertest(app).get(`/api/users/${responsePayload._id}`)
                             .set({"Authorization": token}).then(response => {
@@ -467,7 +494,16 @@ describe("User", () => {
     describe("PUT Follow Method", () => {
         describe("Given Internal error occurs", () => {
             it("should return a 500", async () => {
-                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    reject(new Error());
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -492,7 +528,16 @@ describe("User", () => {
                             followedUsers: [responsePayload._id]
                         }
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
-                        jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(followingPayload);
+                        jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                            populate: () => ({
+                                populate: () =>
+                                    ({
+                                        exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                            resolve(followingPayload);
+                                        }))
+                                    })
+                            })
+                        } as any));
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -528,7 +573,16 @@ describe("User", () => {
                         };
 
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
-                        jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
+                        jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                            populate: () => ({
+                                populate: () =>
+                                    ({
+                                        exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                            resolve(null);
+                                        }))
+                                    })
+                            })
+                        } as any));
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/${responsePayload._id}/follow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -545,7 +599,16 @@ describe("User", () => {
     describe("PUT Unfollow Method", () => {
         describe("Given Internal error occurs", () => {
             it("should return a 500", async () => {
-                jest.spyOn(User, "findOneAndUpdate").mockRejectedValueOnce(new Error());
+                jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                    populate: () => ({
+                        populate: () =>
+                            ({
+                                exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                    reject(new Error());
+                                }))
+                            })
+                    })
+                } as any));
                 await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                     await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                         .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -571,7 +634,16 @@ describe("User", () => {
                             followedUsers: []
                         };
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
-                        jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(unfollowingPayload);
+                        jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                            populate: () => ({
+                                populate: () =>
+                                    ({
+                                        exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                            resolve(unfollowingPayload);
+                                        }))
+                                    })
+                            })
+                        } as any));
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -596,48 +668,6 @@ describe("User", () => {
             });
         });
 
-        describe("GET Users for timeline", () => {
-            describe("Given users are found", () => {
-                it("should return a 200 and the users", async () => {
-                    jest.spyOn(User, "find").mockResolvedValueOnce([responsePayload]);
-                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/timeline`)
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(200);
-                                expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
-                            });
-                    });
-                });
-            });
-
-            describe("Given no users are found", () => {
-                it("should return a 204", async () => {
-                    jest.spyOn(User, "find").mockResolvedValueOnce([]);
-                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/timeline`)
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(204);
-                            });
-                    });
-                });
-            });
-
-            describe("Given an error occurs", () => {
-                it("should return a 500", async () => {
-                    jest.spyOn(User, "find").mockRejectedValueOnce(new Error());
-                    await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
-                        await supertest(app).get(`/api/users/timeline`)
-                            .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
-                            .then(response => {
-                                expect(response.status).toEqual(500);
-                            });
-                    });
-                });
-            });
-        });
-
         describe("Given user is not followed", () => {
             describe("Given user is logged", () => {
                 describe("Given user to unfollow exists", () => {
@@ -649,7 +679,16 @@ describe("User", () => {
                         };
 
                         jest.spyOn(User, "findById").mockResolvedValueOnce(userLoggedPayload);
-                        jest.spyOn(User, "findOneAndUpdate").mockResolvedValueOnce(null);
+                        jest.spyOn(User, "findOneAndUpdate").mockImplementation(() => ({
+                            populate: () => ({
+                                populate: () =>
+                                    ({
+                                        exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                            resolve(null);
+                                        }))
+                                    })
+                            })
+                        } as any));
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/users/${responsePayload._id}/unfollow`)
                                 .set({"Authorization": token, 'Content-type': 'application/json'})
@@ -658,6 +697,48 @@ describe("User", () => {
                                 });
                         });
                     });
+                });
+            });
+        });
+    });
+
+    describe("GET Users for timeline", () => {
+        describe("Given users are found", () => {
+            it("should return a 200 and the users", async () => {
+                jest.spyOn(User, "find").mockResolvedValueOnce([responsePayload]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/users/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(200);
+                            expect(response.body).toMatchObject(expect.arrayContaining([expect.objectContaining(responsePayload)]));
+                        });
+                });
+            });
+        });
+
+        describe("Given no users are found", () => {
+            it("should return a 204", async () => {
+                jest.spyOn(User, "find").mockResolvedValueOnce([]);
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/users/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(204);
+                        });
+                });
+            });
+        });
+
+        describe("Given an error occurs", () => {
+            it("should return a 500", async () => {
+                jest.spyOn(User, "find").mockRejectedValueOnce(new Error());
+                await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
+                    await supertest(app).get(`/api/users/timeline`)
+                        .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
+                        .then(response => {
+                            expect(response.status).toEqual(500);
+                        });
                 });
             });
         });

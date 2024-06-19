@@ -308,7 +308,7 @@ export class UserController {
             {returnOriginal: false, runValidators: true})
             .then((data: any) =>{
                 if(!data) {
-                    res.status(StatusCodes.NOT_FOUND).json();
+                    res.status(StatusCodes.BAD_REQUEST).json();
                 } else {
                     res.status(StatusCodes.OK).json(data);
                 }

@@ -8,7 +8,7 @@ export class CardTrainingController {
     async getCardTrainingsOfDeckTraining(req: any, res: any, next: any) {
         CardTraining.find({
             deckTraining: req.deckTraining._id
-        }).populate('card').populate('deckTraining')
+        }).populate('card').populate('deckTraining').exec()
             .then((data: any) => {
             req.cards = data;
             next();
@@ -28,7 +28,7 @@ export class CardTrainingController {
         CardTraining.find({
             deckTraining: {$in: deckTrainingIds},
             nextTraining: {"$lte": new Date(lowerDate.getTime() + this.MILLISECONDS_PER_DAY - 1)}
-        }).populate('card').populate('deckTraining')
+        }).populate('card').populate('deckTraining').exec()
             .then((data: any) => {
             req.cards = data;
             next();
