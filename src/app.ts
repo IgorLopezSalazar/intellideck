@@ -31,9 +31,6 @@ app.use('/api', CardTrainingRouter);
 app.use('/api', ImagesRouter);
 
 app.use((err: any, req: any, res: any, next: any) => {
-    console.log(err);
-    console.log();
-
     if(err.code == 11000) {
         res.status(StatusCodes.CONFLICT);
     } else if(err.errors && Object.values(err.errors).some((error: any) => error.kind == 'required' ||

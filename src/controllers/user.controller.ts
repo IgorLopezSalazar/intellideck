@@ -107,7 +107,6 @@ export class UserController {
     async putFollowUser(req: any, res: any, next: any) {
         this.genericFollow(req, "followedUsers")
             .then((loggedUser: any) => {
-                console.log(loggedUser)
                 req.followUnfollowData = loggedUser;
                 next();
             })

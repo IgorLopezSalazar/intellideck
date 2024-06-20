@@ -92,7 +92,7 @@ export class DeckTrainingController {
     }
 
     async putDeckTraining(req: any, res: any, next: any) {
-        const date = req.body.resetDate ? new Date() : undefined;
+        const date = req.body.resetDate == "true" ? new Date() : undefined;
         DeckTraining.findOneAndUpdate({
                 user: req.decoded._id,
                 deck: req.params.id
@@ -105,8 +105,6 @@ export class DeckTrainingController {
             .then((data: any) => {
                 if (!data) {
                     res.status(StatusCodes.NOT_FOUND).json();
-                } else if (!req.body.cards) {
-                    res.status(StatusCodes.OK).json(data);
                 } else {
                     req.deckTraining = data;
                     next();
@@ -118,18 +116,25 @@ export class DeckTrainingController {
     }
 
     async putStatisticsAverageTime(req: any, res: any, next: any) {
-        if (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0) {
+        if (!(req.body.resetDate == "true") && (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0)) {
             res.status(StatusCodes.BAD_REQUEST).json("Missing or invalid completion time of attempt");
         } else {
-            const avgCompletionTimeSeconds = ((req.deckTraining.statistics.avgCompletionTimeSeconds *
+            let avgCompletionTimeSeconds = ((req.deckTraining.statistics.avgCompletionTimeSeconds *
                     (req.deckTraining.statistics.attempts))
                 + req.body.completionTimeSeconds) / (req.deckTraining.statistics.attempts + 1);
+            let attempts = req.deckTraining.statistics.attempts + 1;
+            if(req.body.resetDate == "true") {
+                avgCompletionTimeSeconds = 0;
+                attempts = 0;
+            }
             DeckTraining.findOneAndUpdate({
                     user: req.decoded._id,
                     deck: req.params.id
                 }, {
-                    "$set": {"statistics.avgCompletionTimeSeconds": avgCompletionTimeSeconds},
-                    $inc: {"statistics.attempts": 1}
+                    "$set": {
+                        "statistics.avgCompletionTimeSeconds": avgCompletionTimeSeconds,
+                        "statistics.attempts": attempts
+                    }
                 },
                 {returnOriginal: false, runValidators: true, omitUndefined: true})
                 .then((data: any) => {

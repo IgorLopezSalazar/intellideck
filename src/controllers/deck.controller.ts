@@ -216,9 +216,7 @@ export class DeckController {
             res.status(StatusCodes.NO_CONTENT).json();
         } else {
             let deckTrainingIds = req.cards.map((card: any) => card.deckTraining.toString());
-            console.log(deckTrainingIds);
             let decks = req.deckTrainings.filter((dt: any) => deckTrainingIds.indexOf(dt._id.toString()) != -1).map((dt: any) => dt.deck);
-            console.log(decks);
             Deck.find({_id: {$in: decks}})
                 .then((data: any) => {
                     res.status(StatusCodes.OK).json(data);

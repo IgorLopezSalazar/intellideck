@@ -226,10 +226,23 @@ describe("Deck training", () => {
                     it("should return a 200 and the updated deck training", async () => {
                         jest.spyOn(Deck, "findOne").mockResolvedValueOnce(deckPayload);
                         jest.spyOn(DeckTraining, "findOneAndUpdate")
+                            .mockResolvedValueOnce({...dateDeckTrainingPayload, ...tempResponsePayload})
                             .mockResolvedValueOnce({...dateDeckTrainingPayload, ...tempResponsePayload});
+                        jest.spyOn(CardTraining, "find").mockImplementation(() => ({
+                            populate: () => ({
+                                populate: () =>
+                                    ({
+                                        exec: jest.fn().mockReturnValueOnce(new Promise<any>((resolve: any, reject: any) => {
+                                            resolve([cardTrainingPayload]);
+                                        }))
+                                    })
+                            })
+                        } as any));
+                        jest.spyOn(CardTraining, "findOneAndUpdate")
+                            .mockResolvedValueOnce(cardTrainingPayload);
                         await middleware.generateToken(userPayload.id, userPayload.role).then(async (token: any) => {
                             await supertest(app).put(`/api/decks/${deckPayload._id}/deckTraining`).send(
-                                {resetDate: true})
+                                {resetDate: "true"})
                                 .set({Accept: 'application/json', 'Content-type': 'application/json', "Authorization": token})
                                 .then(response => {
                                     expect(response.status).toEqual(200);

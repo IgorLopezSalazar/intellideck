@@ -114,18 +114,25 @@ export class CardTrainingController {
     }
 
     async putCardTraining(req: any, card: any) {
-        let putCard: any = req.body.cards.find((bodyCard: any) => bodyCard.id == card.card._id);
-        if (!putCard) return;
-
-        if (putCard.box > req.deckTraining.boxAmount) {
-            putCard.box = -1;
+        let putCard: any = req.body.cards?.find((bodyCard: any) => bodyCard.id == card.card._id);
+        let box;
+        if (!putCard && !(req.body.resetDate == "true"))
+            return;
+        else if(!putCard && (req.body.resetDate == "true"))
+        {
+            box = 1;
+        } else {
+            box = putCard.box;
         }
+
+        box = (box > req.deckTraining.boxAmount)? -1 : box;
+        let nextTraining = (req.body.resetDate == "true")? new Date(): this.calculateNextSession(sanitize(box))
         return CardTraining.findOneAndUpdate({
                 deckTraining: req.deckTraining._id,
                 card: card.card._id
             }, {
-                box: sanitize(putCard.box),
-                nextTraining: this.calculateNextSession(sanitize(putCard.box))
+                box: sanitize(box),
+                nextTraining: nextTraining
             },
             {returnOriginal: false, runValidators: true, omitUndefined: true});
     }
