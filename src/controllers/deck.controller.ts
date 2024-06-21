@@ -133,6 +133,7 @@ export class DeckController {
 
     async getDeck(req: any, res: any, next: any) {
         Deck.findById(sanitize(req.params.id))
+            .populate('tags').populate('topic').exec()
             .then((data: any) => {
                 if(!data) {
                     res.status(StatusCodes.NOT_FOUND).json(data);
@@ -215,9 +216,10 @@ export class DeckController {
         if (req.cards.length == 0) {
             res.status(StatusCodes.NO_CONTENT).json();
         } else {
-            let deckTrainingIds = req.cards.map((card: any) => card.deckTraining.toString());
+            let deckTrainingIds = req.cards.map((card: any) => card.deckTraining._id.toString());
             let decks = req.deckTrainings.filter((dt: any) => deckTrainingIds.indexOf(dt._id.toString()) != -1).map((dt: any) => dt.deck);
             Deck.find({_id: {$in: decks}})
+                .populate('tags').populate('topic').populate('creator').exec()
                 .then((data: any) => {
                     res.status(StatusCodes.OK).json(data);
                 })

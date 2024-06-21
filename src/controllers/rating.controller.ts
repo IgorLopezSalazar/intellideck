@@ -21,15 +21,15 @@ export class RatingController {
     }
 
     async responsePostRating(req: any, res: any) {
-        res.status(StatusCodes.CREATED).json(req.rating);
+        res.status(StatusCodes.CREATED).json(req.avg);
     }
 
     async responsePutRating(req: any, res: any) {
-        res.status(StatusCodes.OK).json(req.rating);
+        res.status(StatusCodes.OK).json(req.avg);
     }
 
     async responseDeleteRating(req: any, res: any) {
-        res.status(StatusCodes.NO_CONTENT).json();
+        res.status(StatusCodes.NO_CONTENT).json(req.avg);
     }
 
     async getAvgRatingOfDeck(req: any, res: any, next: any) {
@@ -81,7 +81,7 @@ export class RatingController {
             user: sanitize(req.decoded._id),
             deck: sanitize(req.params.id)
         })
-            .then((data: any) => next())
+            .then(() => next())
             .catch((e: any) => {
                 next(e);
             })
