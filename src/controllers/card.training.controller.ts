@@ -116,7 +116,7 @@ export class CardTrainingController {
     async putCardTraining(req: any, card: any) {
         let putCard: any = req.body.cards?.find((bodyCard: any) => bodyCard.id == card.card._id);
         let box;
-        if (!putCard && !(req.body.resetDate == "true"))
+        if (!putCard && req.body.resetDate != "true")
             return;
         else if(!putCard && (req.body.resetDate == "true"))
         {

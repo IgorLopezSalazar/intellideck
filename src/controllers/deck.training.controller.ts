@@ -116,7 +116,7 @@ export class DeckTrainingController {
     }
 
     async putStatisticsAverageTime(req: any, res: any, next: any) {
-        if (!(req.body.resetDate == "true") && (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0)) {
+        if (req.body.resetDate != "true" && (!req.body.completionTimeSeconds || req.body.completionTimeSeconds < 0)) {
             res.status(StatusCodes.BAD_REQUEST).json("Missing or invalid completion time of attempt");
         } else {
             let avgCompletionTimeSeconds = ((req.deckTraining.statistics.avgCompletionTimeSeconds *
