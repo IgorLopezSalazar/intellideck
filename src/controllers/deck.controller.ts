@@ -308,7 +308,7 @@ export class DeckController {
                 $match: {
                     $and: [
                         {$expr: {$ne: ["$topic", []]}},
-                        {$expr: {$ne: ["$tagsCheck", []]}},
+                        (req.query.tag)? {$expr: {$ne: ["$tagsCheck", []]}} : {$expr: {$eq: ["$tags", []]}},
                         {$expr: {$ne: ["$creator", []]}}
                     ]
                 }
