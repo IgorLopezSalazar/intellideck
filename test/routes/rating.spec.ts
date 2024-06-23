@@ -54,7 +54,7 @@ describe("Rating", () => {
                             })
                             .then(response => {
                                 expect(response.status).toEqual(201);
-                                expect(response.body).toMatchObject(expect.objectContaining(responsePayload[0]));
+                                expect(response.body).toBe(6);
                             });
                     });
                 });
@@ -168,7 +168,7 @@ describe("Rating", () => {
                             })
                             .then(response => {
                                 expect(response.status).toEqual(200);
-                                expect(response.body).toMatchObject(expect.objectContaining(responsePayload[0]));
+                                expect(response.body).toBe(6);
                             });
                     });
                 });
