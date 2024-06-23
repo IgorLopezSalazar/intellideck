@@ -86,7 +86,9 @@ export class DeckController {
         Deck.find({
             creator: sanitize(req.params.id),
             isPublished: true
-        }).then((data: any[]) => {
+        })
+            .populate('tags').populate('topic').populate('creator').exec()
+            .then((data: any[]) => {
             if (data.length == 0) {
                 res.status(StatusCodes.NO_CONTENT).json();
             } else {
