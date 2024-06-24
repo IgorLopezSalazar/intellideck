@@ -1,11 +1,16 @@
-const express = require('express')
-const app = express()
-const port = 3000
+import mongoose from "mongoose";
+import {app} from "./app.ts";
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+const db_connection = `${process.env.DB_CONNECTION}`;
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+mongoose.connect(db_connection)
+    .then(() => {
+        console.log("connected");
+        app.listen(process.env.PORT, () => {
+            console.log(`Server running on port ${process.env.PORT}`)
+        });
+    })
+    .catch((e: any) => {
+        console.info('Mongoose connection error');
+        console.error(e);
+    });
